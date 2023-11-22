@@ -36,12 +36,3 @@ class User:
         self.fullname = None
         self.passwd = None
         self.id = None
-
-class View:
-    def __init__(self, description):
-        self.description = description
-        self.schedules = []
-    def addSchedule(self, schid):
-        pass
-        # TODO there should be a structure that holds all the schedules
-
