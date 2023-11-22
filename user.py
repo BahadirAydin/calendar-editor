@@ -11,7 +11,7 @@ class User:
         self.fullname = fullname
         self.passwd = hashlib.sha256(passwd.encode()).hexdigest()
 
-    def getId(self, id):
+    def getId(self):
         return self.id
 
     def get(self):
