@@ -1,6 +1,5 @@
 import uuid
 
-# Defining valid event types
 event_types = ["MEETING", "SEMINAR", "LECTURE", "APPOINTMENT", "OFFICEHOUR", "FUN"]
 
 class Event:
@@ -38,5 +37,4 @@ class Event:
                 raise AttributeError(f"No attribute named {key}")
 
     def delete(self):
-        # Here, the deletion logic should be implemented based on how the events are stored
         pass

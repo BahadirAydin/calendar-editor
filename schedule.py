@@ -33,6 +33,11 @@ class Schedule:
     def delete_event(self, event_id):
         self.events = [event for event in self.events if event.id != event_id]
 
+    def list_events(self):
+        return [event.get() for event in self.events]
+
+    def search(self, **kwargs):
+        pass
+    
     def delete(self):
-        # Logic for deleting the schedule itself
         pass
