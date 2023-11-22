@@ -1,20 +1,10 @@
 import uuid
 
+# Defining valid event types
 event_types = ["MEETING", "SEMINAR", "LECTURE", "APPOINTMENT", "OFFICEHOUR", "FUN"]
 
-
 class Event:
-    def __init__(
-        self,
-        event_type,
-        start,
-        end,
-        period,
-        description,
-        location,
-        protection,
-        assignee,
-    ):
+    def __init__(self, event_type, start, end, period, description, location, protection, assignee):
         if event_type not in event_types:
             raise ValueError("Unknown event type")
         self.id = uuid.uuid4()
@@ -24,11 +14,29 @@ class Event:
         self.period = period
         self.description = description
         self.location = location
-        # defines who can view/modify the event
         self.protection = protection
-        # list of users to invite the event
         self.assignee = assignee
 
-    # ID
-    def getid(self):
-        return self.id
+    def get(self):
+        return {
+            "id": self.id,
+            "event_type": self.event_type,
+            "start": self.start,
+            "end": self.end,
+            "period": self.period,
+            "description": self.description,
+            "location": self.location,
+            "protection": self.protection,
+            "assignee": self.assignee
+        }
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
+                raise AttributeError(f"No attribute named {key}")
+
+    def delete(self):
+        # Here, the deletion logic should be implemented based on how the events are stored
+        pass

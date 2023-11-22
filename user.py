@@ -5,37 +5,30 @@ import hashlib
 
 class User:
     def __init__(self, username, email, fullname, passwd):
+        self.id = uuid.uuid4()
         self.username = username
         self.email = email
         self.fullname = fullname
         self.passwd = hashlib.sha256(passwd.encode()).hexdigest()
-        self.id = uuid.uuid4()
 
-    def getid(self):
+    def getId(self, id):
         return self.id
 
     def get(self):
-        # json-like object
         return {
+            "id": self.id,
             "username": self.username,
             "email": self.email,
-            "fullname": self.fullname,
-            "passwd": self.passwd,
-            "id": self.id,
+            "fullname": self.fullname
         }
 
-    def update(self, **kw):
-        for k, v in kw.items():
-            if k == "username":
-                self.username = v
-            elif k == "email":
-                self.email = v
-            elif k == "fullname":
-                self.fullname = v
-            elif k == "passwd":
-                self.passwd = v
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
             else:
-                raise KeyError(f"Invalid key {k}")
+                raise AttributeError(f"No attribute named {key}")
+
 
     def delete(self):
         self.username = None
