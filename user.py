@@ -3,6 +3,7 @@ import uuid
 import hashlib
 from view import View
 
+
 class User:
     def __init__(self, username, email, fullname, passwd):
         self.id = str(uuid.uuid4())
@@ -10,7 +11,7 @@ class User:
         self.email = email
         self.fullname = fullname
         self.passwd = hashlib.sha256(passwd.encode()).hexdigest()
-        self.view = View(f"{username}'s View") 
+        self.view = View(f"{username}'s View")
 
     def get(self):
         return {

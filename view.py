@@ -5,7 +5,7 @@ class View:
         self.current_view = None  # To keep track of the main view for notifications
 
     def addSchedule(self, schedule_id, schedule):
-        self.schedules[schedule_id] = {'schedule': schedule, 'filters': {}}
+        self.schedules[schedule_id] = {"schedule": schedule, "filters": {}}
 
     def deleteSchedule(self, schedule_id):
         if schedule_id in self.schedules:
@@ -13,16 +13,16 @@ class View:
 
     def setFilter(self, schedule_id, **kwargs):
         if schedule_id in self.schedules:
-            self.schedules[schedule_id]['filters'] = kwargs
+            self.schedules[schedule_id]["filters"] = kwargs
 
     def removefilters(self, schedule_id):
         if schedule_id in self.schedules:
-            self.schedules[schedule_id]['filters'] = {}
+            self.schedules[schedule_id]["filters"] = {}
 
     def listItems(self):
         for schedule_id, data in self.schedules.items():
-            filters = data['filters']
-            for event in data['schedule'].events:
+            filters = data["filters"]
+            for event in data["schedule"].events:
                 if self._matches_filters(event, filters):
                     yield event
 

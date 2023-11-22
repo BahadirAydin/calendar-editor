@@ -2,6 +2,7 @@ import json
 import uuid
 from event import Event
 
+
 class Schedule:
     def __init__(self, description, protection):
         self.id = uuid.uuid4()
@@ -16,12 +17,14 @@ class Schedule:
             raise TypeError("The object must be an instance of Event.")
 
     def get(self):
-        return json.dumps({
-            "id": self.id,
-            "description": self.description,
-            "protection": self.protection,
-            "events": [event.get() for event in self.events]
-        })
+        return json.dumps(
+            {
+                "id": self.id,
+                "description": self.description,
+                "protection": self.protection,
+                "events": [event.get() for event in self.events],
+            }
+        )
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
@@ -38,6 +41,6 @@ class Schedule:
 
     def search(self, **kwargs):
         pass
-    
+
     def delete(self):
         pass
