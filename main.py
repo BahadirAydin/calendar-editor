@@ -54,12 +54,36 @@ def create_schedule():
 
 def add_event_to_schedule():
     schedule_id = input("Enter the schedule ID to add the event to: ")
-    schedule = next((s for s in schedules if s.id == schedule_id), None)
+    schedule = next((s for s in schedules if str(s.id) == str(schedule_id)), None)
     if schedule:
         event = create_event()
         if event:
             schedule.add_event(event)
             print("Event added to the schedule.")
+    else:
+        print("Schedule not found.")
+
+def list_all_ids():
+    print("User IDs:")
+    for user in users:
+        print(f"- {user.id}")
+
+    print("\nSchedule IDs:")
+    for schedule in schedules:
+        print(f"- {schedule.id}")
+
+def view_user_schedule():
+    if not current_user:
+        print("Please switch to a user first.")
+        return
+    
+    schedule_id = input("Enter the schedule ID to view: ")
+    schedule = next((s for s in schedules if s.id == schedule_id), None)
+
+    if schedule:
+        print(f"\nSchedule: {schedule.description}")
+        for event in schedule.events:
+            print(f"- Event ID: {event.id}, Type: {event.event_type}, Description: {event.description}")
     else:
         print("Schedule not found.")
 
@@ -71,7 +95,9 @@ def main_menu():
         print("3. Create Event")
         print("4. Create Schedule")
         print("5. Add Event to Schedule")
-        print("6. Exit")
+        print("6. View User's Schedule")
+        print("7. List All IDs")
+        print("8. Exit")
         choice = input("Enter your choice: ")
 
         if choice == "1":
@@ -85,6 +111,10 @@ def main_menu():
         elif choice == "5":
             add_event_to_schedule()
         elif choice == "6":
+            view_user_schedule()
+        elif choice == "7":
+            list_all_ids()
+        elif choice == "8":
             print("Exiting the application.")
             break
         else:
