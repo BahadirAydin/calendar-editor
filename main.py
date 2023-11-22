@@ -16,6 +16,16 @@ def create_user():
     users.append(user)
     print(f"User created with ID: {user.id}")
 
+def switch_user():
+    global current_user
+    user_id = input("Enter user ID to switch to: ")
+    for user in users:
+        if user.id == user_id:
+            current_user = user
+            print(f"Switched to user: {current_user.username}")
+            return
+    print("User not found.")
+
 def create_event():
     if not current_user:
         print("Please switch to a user first.")
@@ -44,7 +54,7 @@ def create_schedule():
 
 def add_event_to_schedule():
     schedule_id = input("Enter the schedule ID to add the event to: ")
-    schedule = next((s for s in schedules if s.id == str(schedule_id).strip()), None)
+    schedule = next((s for s in schedules if s.id == schedule_id), None)
     if schedule:
         event = create_event()
         if event:
@@ -79,7 +89,6 @@ def main_menu():
             break
         else:
             print("Invalid choice. Please try again.")
-
 
 if __name__ == "__main__":
     main_menu()
