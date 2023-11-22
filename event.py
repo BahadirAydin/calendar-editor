@@ -2,8 +2,19 @@ import uuid
 
 event_types = ["MEETING", "SEMINAR", "LECTURE", "APPOINTMENT", "OFFICEHOUR", "FUN"]
 
+
 class Event:
-    def __init__(self, event_type, start, end, period, description, location, protection, assignee):
+    def __init__(
+        self,
+        event_type,
+        start,
+        end,
+        period,
+        description,
+        location,
+        protection,
+        assignee,
+    ):
         if event_type not in event_types:
             raise ValueError("Unknown event type")
         self.id = uuid.uuid4()
@@ -26,7 +37,7 @@ class Event:
             "description": self.description,
             "location": self.location,
             "protection": self.protection,
-            "assignee": self.assignee
+            "assignee": self.assignee,
         }
 
     def update(self, **kwargs):

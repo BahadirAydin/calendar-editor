@@ -9,6 +9,7 @@ users = []
 schedules = []
 current_user = None
 
+
 def create_event():
     print("\nCreate Event")
     event_type = input("Enter event type (e.g., MEETING, SEMINAR): ")
@@ -20,9 +21,12 @@ def create_event():
     protection = input("Enter protection level: ")
     assignee = input("Enter assignee: ")
 
-    event = Event(event_type, start, end, period, description, location, protection, assignee)
+    event = Event(
+        event_type, start, end, period, description, location, protection, assignee
+    )
     events.append(event)
     print(f"Event created with ID: {event.id}")
+
 
 def view_event():
     event_id = input("Enter event ID to view: ")
@@ -31,6 +35,7 @@ def view_event():
             print(vars(event))
             return
     print("Event not found.")
+
 
 def update_event():
     event_id = input("Enter event ID to update: ")
@@ -41,11 +46,13 @@ def update_event():
             return
     print("Event not found.")
 
+
 def delete_event():
     event_id = input("Enter event ID to delete: ")
     global events
     events = [event for event in events if str(event.id) != event_id]
     print(f"Event {event_id} deleted.")
+
 
 def switch_user():
     global current_user
@@ -56,6 +63,7 @@ def switch_user():
             print(f"Switched to user: {current_user.username}")
             return
     print("User not found.")
+
 
 def main_menu():
     while True:
@@ -83,6 +91,7 @@ def main_menu():
             break
         else:
             print("Invalid choice. Please try again.")
+
 
 if __name__ == "__main__":
     main_menu()
