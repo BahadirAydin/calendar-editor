@@ -78,7 +78,7 @@ def view_user_schedule():
         return
     
     schedule_id = input("Enter the schedule ID to view: ")
-    schedule = next((s for s in schedules if s.id == schedule_id), None)
+    schedule = next((s for s in schedules if str(s.id) == schedule_id), None)
 
     if schedule:
         print(f"\nSchedule: {schedule.description}")
