@@ -19,7 +19,7 @@ class Schedule:
     def get(self):
         return json.dumps(
             {
-                "id": self.id,
+                "id": str(self.id),
                 "description": self.description,
                 "protection": self.protection,
                 "events": [event.get() for event in self.events],

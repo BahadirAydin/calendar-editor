@@ -29,7 +29,7 @@ class Event:
 
     def get(self):
         return {
-            "id": self.id,
+            "id": str(self.id),
             "event_type": self.event_type,
             "start": self.start,
             "end": self.end,
