@@ -1,7 +1,6 @@
-from schedule import Schedule
 import uuid
 import hashlib
-from view import View
+import json
 
 
 class User:
@@ -11,15 +10,18 @@ class User:
         self.email = email
         self.fullname = fullname
         self.passwd = hashlib.sha256(passwd.encode()).hexdigest()
-        self.view = View(f"{username}'s View")
+        self.schedules = []
+        self.views = []
 
     def get(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "fullname": self.fullname,
-        }
+        return json.dumps(
+            {
+                "id": str(self.id),
+                "username": self.username,
+                "email": self.email,
+                "fullname": self.fullname,
+            }
+        )
 
     def getId(self):
         return self.id
