@@ -1,5 +1,9 @@
+import uuid
+
+
 class View:
     def __init__(self, description):
+        self.id = uuid.uuid4()
         self.description = description
         self.schedules = {}  # Stores schedules with their respective filters
         self.current_view = None  # To keep track of the main view for notifications
@@ -20,7 +24,7 @@ class View:
             self.schedules[schedule_id]["filters"] = {}
 
     def listItems(self):
-        for schedule_id, data in self.schedules.items():
+        for _, data in self.schedules.items():
             filters = data["filters"]
             for event in data["schedule"].events:
                 if self._matches_filters(event, filters):
