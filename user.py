@@ -1,6 +1,7 @@
 import uuid
 import hashlib
 import json
+import sqlite3
 
 
 class User:
