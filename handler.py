@@ -21,7 +21,7 @@ def verify_password(password):
 
 def handle_adduser(request):
     if len(request) == 4:
-        if ScheduleManager().is_user_exists(request[0]):
+        if ScheduleManager().user_exists(request[0]):
             return "User already exists"
         if not verify_username(request[0]):
             return "Username must be 4-16 characters long and start with a letter"
@@ -41,6 +41,25 @@ def handle_adduser(request):
         return "Missing or too much arguments.\n adduser requires <username> <email> <fullname> <password>"
 
 
+def handle_deleteuser(request):
+    if len(request) == 2:
+        username = request[0]
+        password = request[1]
+        if ScheduleManager().login(username, password):
+            if ScheduleManager().delete_user_by_id(
+                ScheduleManager().get_user_id(username)
+            ):
+                return f"User {username} deleted successfully"
+            else:
+                return "Database error"
+        else:
+            return "Invalid username or password"
+    else:
+        return (
+            "Missing or too much arguments.\n deleteuser requires <username> <password>"
+        )
+
+
 def handle_signin(request):
     if len(request) == 2:
         username = request[0]
@@ -51,3 +70,42 @@ def handle_signin(request):
             return "Invalid username or password"
     else:
         return "Missing or too much arguments.\n signin requires <username> <password>"
+
+
+def handle_addschedule(request):
+    if len(request) == 3:
+        username = request[0]
+        description = request[1]
+        protection = request[2]
+
+        if not ScheduleManager().user_exists(username):
+            return "User does not exist"
+
+        user_id = ScheduleManager().get_user_id(username)
+
+        if ScheduleManager().create_schedule(user_id, description, protection):
+            return "Schedule added successfully"
+        else:
+            return "Database error"
+    else:
+        return "Missing or too many arguments.\n addschedule requires <username> <description> <protection>"
+
+
+def handle_deleteschedule(request):
+    if len(request) == 2:
+        username = request[0]
+        schedule_id = request[1]
+
+        if not ScheduleManager().user_exists(username):
+            return "User does not exist"
+
+        user_id = ScheduleManager().get_user_id(username)
+        if not ScheduleManager().schedule_exists(user_id, schedule_id):
+            return "Schedule does not exist"
+
+        if ScheduleManager().delete_schedule(user_id, schedule_id):
+            return "Schedule deleted successfully"
+        else:
+            return "Database error"
+    else:
+        return "Missing or too many arguments.\n deleteschedule requires <username> <schedule_id>"

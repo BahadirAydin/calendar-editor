@@ -12,7 +12,10 @@ schedule_manager = ScheduleManager()
 VALID_COMMANDS = ["adduser", "signin"]
 HELP_TEXT = """Valid commands are:
 adduser <username> <email> <fullname> <password>
+deleteuser <username> <password>
 signin <username> <password>
+addschedule <username> <description> <protection>
+deleteschedule <username> <schedule_id>
 """
 
 
@@ -37,6 +40,10 @@ def process_request(request):
             return handle_adduser(parts[1:])
         elif command == "signin":
             return handle_signin(parts[1:])
+        elif command == "addschedule":
+            return handle_addschedule(parts[1:])
+        elif command == "deleteschedule":
+            return handle_deleteschedule(parts[1:])
 
     return HELP_TEXT
 
