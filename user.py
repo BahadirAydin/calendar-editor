@@ -46,7 +46,7 @@ class User:
     def login(self, uname, passwd):
         with sqlite3.connect('project.sql3') as db:
             c = db.cursor()
-            row = c.execute('select username,password from auth where username=?',(user,))
+            row = c.execute('select username,password from auth where username=?',(uname))
         if hashlib.sha256(passwd.encode()).hexdigest() == row[1]:
             return True
         return False
