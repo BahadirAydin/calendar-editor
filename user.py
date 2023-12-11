@@ -40,22 +40,18 @@ class User:
         self.passwd = None
         self.id = None
 
-    @staticmethod
-    def auth(passwd):
-        return passwd == hashlib.sha256(passwd.encode()).hexdigest()
+    def auth(self, passwd):
+        return self.passwd == hashlib.sha256(passwd.encode()).hexdigest()
 
-    @staticmethod
-    def login(uname, passwd):
+    def login(self, uname, passwd):
         with sqlite3.connect('project.sql3') as db:
             c = db.cursor()
-            row = c.execute('select username,password from auth where username=?',(user))
+            row = c.execute('select username,password from auth where username=?',(user,))
         if hashlib.sha256(passwd.encode()).hexdigest() == row[1]:
             return True
         return False
     
-    @staticmethod
-    def adduser(user,passwd):
-        print(user, passwd)
+    def adduser(self, user,passwd):
         encpasswd = hashlib.sha256(passwd.encode()).hexdigest()
         with sqlite3.connect('project.sql3') as db:
             c = db.cursor()
