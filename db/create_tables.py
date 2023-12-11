@@ -6,16 +6,16 @@ cursor = conn.cursor()
 
 cursor.execute(
     """CREATE TABLE IF NOT EXISTS auth (
-                    id INTEGER PRIMARY KEY,
+                    username TEXT PRIMARY KEY,
                     password TEXT,
-                    FOREIGN KEY (id) REFERENCES user(id)
+                    FOREIGN KEY (username) REFERENCES user(username)
                 )"""
 )
 
 cursor.execute(
     """CREATE TABLE IF NOT EXISTS sessions (
                     token TEXT PRIMARY KEY,
-                    username INTEGER,
+                    username TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )"""
 )
