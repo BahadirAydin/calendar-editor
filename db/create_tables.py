@@ -9,6 +9,12 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS auth (
                     password TEXT
                 )''')
 
+cursor.execute('''CREATE TABLE IF NOT EXISTS sessions (
+                    token TEXT PRIMARY KEY,
+                    username INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )''')
+
 conn.commit()
 
 conn.close()
