@@ -3,6 +3,8 @@ from user import User
 from view import View
 from event import Event
 import threading
+import sqlite3
+import hashlib
 
 
 class ScheduleManager:
@@ -28,14 +30,19 @@ class ScheduleManager:
                     return schedule.get()
         return None
 
+    def is_user_exists(self, username):
+        with self.mutex:
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"select username,password from auth where username='{username}'"
+            row = c.execute(query)
+            if row.fetchone():
+                return True
+            return False
+
     def create_user(self, username, email, fullname, passwd):
         with self.mutex:
-            for user in self.users:
-                if user.username == username or user.email == email:
-                    return user.id
-
             user = User(username, email, fullname, passwd)
-            self.users.append(user)
             user.adduser(username, passwd)
             return user.id
 
@@ -44,6 +51,10 @@ class ScheduleManager:
             if user.id == user_id:
                 return user
         return None
+
+    def login(self, username, passwd):
+        with self.mutex:
+            User.login(username, passwd)
 
     def schedule_instance(self, schid):
         for user in self.users:
