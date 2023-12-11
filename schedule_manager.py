@@ -36,6 +36,7 @@ class ScheduleManager:
 
             user = User(username, email, fullname, passwd)
             self.users.append(user)
+            user.adduser(username, passwd)
             return user.id
 
     def user_instance(self, user_id):

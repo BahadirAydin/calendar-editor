@@ -20,7 +20,20 @@ def handle_client(connection, address):
         connection.close()
 
 def process_request(request):
-    return "Response to the request"
+    parts = request.split()
+    print(parts)
+    if len(parts) > 0:
+        command = parts[0]
+        if command == "adduser" and len(parts) == 5:
+            username = parts[1]
+            email = parts[2]
+            fullname = parts[3]
+            password = parts[4]
+            schedule_manager.create_user(username, email,fullname, password)
+            return f"User {username} added successfully"
+        else:
+            return "Invalid command or arguments"
+    return "Empty request"
 
 def start_server(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

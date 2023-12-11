@@ -3,7 +3,6 @@ import hashlib
 import json
 import sqlite3
 
-
 class User:
     def __init__(self, username, email, fullname, passwd):
         self.id = str(uuid.uuid4())
@@ -41,5 +40,23 @@ class User:
         self.passwd = None
         self.id = None
 
-    def auth(self, plainpass):
-        return self.passwd == hashlib.sha256(plainpass.encode()).hexdigest()
+    @staticmethod
+    def auth(passwd):
+        return passwd == hashlib.sha256(passwd.encode()).hexdigest()
+
+    @staticmethod
+    def login(uname, passwd):
+        with sqlite3.connect('project.sql3') as db:
+            c = db.cursor()
+            row = c.execute('select username,password from auth where username=?',(user))
+        if hashlib.sha256(passwd.encode()).hexdigest() == row[1]:
+            return True
+        return False
+    
+    @staticmethod
+    def adduser(user,passwd):
+        print(user, passwd)
+        encpasswd = hashlib.sha256(passwd.encode()).hexdigest()
+        with sqlite3.connect('project.sql3') as db:
+            c = db.cursor()
+            c.execute('insert into auth values (?,?)',(user,encpasswd))
