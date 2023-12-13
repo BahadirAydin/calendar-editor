@@ -1,7 +1,7 @@
 import uuid
+import sqlite3
 
 event_types = ["MEETING", "SEMINAR", "LECTURE", "APPOINTMENT", "OFFICEHOUR", "FUN"]
-
 
 class Event:
     def __init__(
@@ -14,6 +14,7 @@ class Event:
         location,
         protection,
         assignee,
+        schedule_id
     ):
         if event_type not in event_types:
             raise ValueError("Unknown event type")
@@ -26,6 +27,7 @@ class Event:
         self.location = location
         self.protection = protection
         self.assignee = assignee
+        self.schedule_id = schedule_id
 
     def get(self):
         return {
@@ -38,6 +40,7 @@ class Event:
             "location": self.location,
             "protection": self.protection,
             "assignee": self.assignee,
+            "schedule_id": self.schedule_id
         }
 
     def update(self, **kwargs):
@@ -49,3 +52,10 @@ class Event:
 
     def delete(self):
         pass
+
+    def save(self):
+        with sqlite3.connect("project.sql3") as db:
+            c = db.cursor()
+            if c.execute("select * from event where id=?", (self.id,)).fetchone():
+                return False
+            c.execute("insert into user event (?,?,?,?,?,?,?,?,?)", (self.id, self.schedule_id, self.start, self.end, self.period, self.description, self.location, self.protection, self.assignee))

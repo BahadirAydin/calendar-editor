@@ -17,6 +17,7 @@ import datetime
 
 class ScheduleManager:
     _instance = None
+    _session_map = dict()
 
     def __new__(cls):
         if cls._instance is None:
@@ -27,13 +28,13 @@ class ScheduleManager:
     # -------------------------
     # User-related Functions
     # -------------------------
-    def create_user(self, username, email, fullname, passwd):
+    def create_or_get_user(self, username, email, fullname, passwd):
         with self.mutex:
             if self.user_exists(username):
                 return None
             user = User(username, email, fullname, passwd)
             user.save()
-            return user.id
+            return user
 
     def get_user_id(self, username):
         with self.mutex:
@@ -79,6 +80,16 @@ class ScheduleManager:
             query = f"delete from user where id={user_id}"
             c.execute(query)
             db.commit()
+        
+    def save_session(self, thread_id, username, obj):
+        if(thread_id not in self._session_map):
+            self._session_map[thread_id] = {username: username, obj: obj}
+    
+    def is_logged_in(self, username):
+        for thread_id in self._session_map:
+            if(self._session_map[thread_id]["username"] == username):
+                return True
+        return False
 
     # -------------------------
     # Schedule-related Functions

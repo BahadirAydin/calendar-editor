@@ -1,6 +1,5 @@
 import uuid
 
-
 class View:
     def __init__(self, description):
         self.id = uuid.uuid4()

@@ -1,7 +1,6 @@
 from client import TCPClient
 import argparse
 
-
 def main(port_no):
     host = "localhost"
     port = port_no
@@ -17,6 +16,9 @@ def main(port_no):
 
             response = client.send_request(message)
             print("Response:\n", response)
+            
+            if(message.lower().startswith("signin")):
+                pass
     finally:
         client.close()
 

@@ -25,14 +25,14 @@ def handle_client(connection, address):
             request = connection.recv(1024).decode()
             if not request:
                 break
-
-            response = process_request(request)
+            
+            response = process_request(request, threading.get_ident())
             connection.sendall(response.encode())
     finally:
         connection.close()
 
 
-def process_request(request):
+def process_request(request, thread_id):
     parts = shlex.split(request)
     if len(parts) > 0:
         command = parts[0]
@@ -40,7 +40,11 @@ def process_request(request):
             return handle_adduser(parts[1:])
         elif command == "signin":
             return handle_signin(parts[1:])
-        elif command == "addschedule":
+        
+        if not ScheduleManager().is_logged_in(thread_id):
+            return "You should authenticate to proceed."
+        
+        if command == "addschedule":
             return handle_addschedule(parts[1:])
         elif command == "deleteschedule":
             return handle_deleteschedule(parts[1:])

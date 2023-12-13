@@ -33,7 +33,7 @@ def handle_adduser(request):
         if not verify_password(request[3]):
             return "Password must be at least 6 characters long"
         password = request[3]
-        if ScheduleManager().create_user(username, email, fullname, password):
+        if ScheduleManager().create_or_get_user(username, email, fullname, password):
             return f"User {username} added successfully"
         else:
             return "Database error"
