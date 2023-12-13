@@ -22,7 +22,7 @@ cursor.execute(
 
 cursor.execute(
     """CREATE TABLE IF NOT EXISTS user (
-    id INTEGER PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     username TEXT UNIQUE,
     email TEXT UNIQUE,
     fullname TEXT
@@ -32,7 +32,7 @@ cursor.execute(
 
 cursor.execute(
     """ CREATE TABLE IF NOT EXISTS schedule (
-        id INTEGER PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         user_id INTEGER,
         description TEXT,
         protection TEXT,
@@ -42,7 +42,7 @@ cursor.execute(
 
 cursor.execute(
     """ CREATE TABLE IF NOT EXISTS event(
-      id INTEGER PRIMARY KEY,
+      id TEXT PRIMARY KEY,
       schedule_id INTEGER,
       start_time TEXT,
       end_time TEXT,
@@ -59,7 +59,7 @@ cursor.execute(
 cursor.execute(
     """
         CREATE TABLE IF NOT EXISTS view (
-            id INTEGER,
+            id TEXT,
             user_id INTEGER,
             schedule_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES user(id),

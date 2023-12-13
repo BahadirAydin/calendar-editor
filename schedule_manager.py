@@ -32,7 +32,7 @@ class ScheduleManager:
             if self.user_exists(username):
                 return None
             user = User(username, email, fullname, passwd)
-            user.adduser(username, passwd)
+            user.save()
             return user.id
 
     def get_user_id(self, username):
