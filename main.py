@@ -50,6 +50,8 @@ def process_request(request):
 
 def start_server(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # added to prevent socket already in use error.
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(("", port))
     server_socket.listen()
     atexit.register(server_socket.close)
