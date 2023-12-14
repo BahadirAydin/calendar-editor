@@ -26,8 +26,8 @@ class ScheduleManager:
     schedules = []
     events = []
     views = []
-    schedules_AND_views = []
-    users_AND_views = []
+    schedules_and_views = []
+    users_and_views = []
 
     def __new__(cls):
         if cls._instance is None:
