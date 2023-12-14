@@ -8,6 +8,7 @@ import sqlite3
 import uuid
 import datetime
 
+
 class ScheduleManager:
     _instance = None
     _session_map = dict()
@@ -46,12 +47,25 @@ class ScheduleManager:
             return v[0]
 
     def get_user_by_id(self, user_id):
-        with self.mutex:
-            for user in self.users:
-                if user.id == user_id:
-                    return user
-        return None  
-    
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from user where id='{user_id}'"
+        row = c.execute(query)
+        v = row.fetchone()
+        if v is None:
+            return None
+        return v[0]
+
+    def get_username_by_id(self, user_id):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select username from user where id='{user_id}'"
+        row = c.execute(query)
+        v = row.fetchone()
+        if v is None:
+            return None
+        return v[0]
+
     def user_exists(self, username):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
@@ -75,14 +89,24 @@ class ScheduleManager:
 
     def delete_user_by_id(self, user_id):
         with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"delete from user where id={user_id}"
-            c.execute(query)
-            db.commit()
-            for user in self.users:
-                if(user.id == user_id):
-                    self.users.remove(user)
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                username = self.get_username_by_id(user_id)
+                query = f"delete from auth where username='{username}'"
+                c.execute(query)
+                query = f"delete from schedule where user_id='{user_id}'"
+                c.execute(query)
+                query = f"delete from user where id='{user_id}'"
+                c.execute(query)
+                db.commit()
+                for user in self.users:
+                    if user.id == user_id:
+                        self.users.remove(user)
+                return True
+            except Exception as e:
+                print(e)
+                return False
 
     def save_session(self, thread_id, username, obj):
         if thread_id not in self._session_map:
@@ -251,23 +275,33 @@ class ScheduleManager:
 
     def update_event(self, **kwargs):
         with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"update event set "
-            for key, value in kwargs.items():
-                query += f"{key}={value},"
-            query = query[:-1]
-            query += f" where id={kwargs['id']}"
-            c.execute(query)
-            db.commit()
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                query = "UPDATE event SET "
+                for key, value in kwargs.items():
+                    query += f"{key}={value}, "
+                query = query[:-2]  # Remove the trailing comma and space
+                event_id = kwargs["id"]
+                query += f"WHERE id='{event_id}'"
+                c.execute(query)
+                db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
 
     def delete_event(self, event_id):
         with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"delete from event where id={event_id}"
-            c.execute(query)
-            db.commit()
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                query = f"delete from event where id='{event_id}'"
+                c.execute(query)
+                db.commit()
+            except Exception as e:
+                print(e)
+                return False
 
     # -------------------------
     # Other Helper Functions

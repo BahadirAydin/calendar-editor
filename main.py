@@ -56,6 +56,8 @@ def process_request(request, thread_id):
             return handle_deleteuser(parts[1:])
         elif command == "addevent":
             return handle_addevent(parts[1:], id)
+        elif command == "deleteevent":
+            return handle_deleteevent(parts[1:], id)
         elif command == "PRINTUSER":
             return handle_printuser(id)
         elif command == "PRINTSCHEDULE":
