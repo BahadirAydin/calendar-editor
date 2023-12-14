@@ -88,11 +88,18 @@ class ScheduleManager:
 
     def delete_user_by_id(self, user_id):
         with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"delete from user where id={user_id}"
-            c.execute(query)
-            db.commit()
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                query = f"delete from schedule where user_id='{user_id}'"
+                c.execute(query)
+                query = f"delete from user where id='{user_id}'"
+                c.execute(query)
+                db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
 
     # HACK obj is not required imo
     def save_session(self, thread_id, username, obj):
