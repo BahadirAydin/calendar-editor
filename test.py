@@ -23,8 +23,8 @@ class TestScheduleManager(unittest.TestCase):
     def test_singleton(self):
         self.assertEqual(id(self.schedule_manager), id(ScheduleManager()))
 
-    def test_create_or_get_user(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+    def test_create_user(self):
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         user_json = self.schedule_manager.get_user(user_id)
         expected_user_json = json.dumps(
             {
@@ -37,7 +37,7 @@ class TestScheduleManager(unittest.TestCase):
         self.assertEqual(user_json, expected_user_json)
 
     def test_create_schedule(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         schedule_id = self.schedule_manager.create_schedule(
             user_id, DESCRIPTION, PROTECTION
         )
@@ -53,13 +53,13 @@ class TestScheduleManager(unittest.TestCase):
         self.assertEqual(schedule_json, expected_schedule_json)
 
     def test_create_view(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         view_id = self.schedule_manager.create_view(user_id, DESCRIPTION)
         view = self.schedule_manager.view_instance(view_id)
         self.assertEqual(view.description, DESCRIPTION)
 
     def test_create_event(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         schid = self.schedule_manager.create_schedule(user_id, DESCRIPTION, PROTECTION)
         event_id = self.schedule_manager.create_event(
             schid, TYPE, START, END, PERIOD, DESCRIPTION, LOCATION, PROTECTION, ASSIGNEE
@@ -85,7 +85,7 @@ class TestScheduleManager(unittest.TestCase):
         self.assertEqual(schedule_json, expected_schedule_json)
 
     def test_add_schedule_to_view(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         view_id = self.schedule_manager.create_view(user_id, DESCRIPTION)
         schedule_id = self.schedule_manager.create_schedule(
             user_id, DESCRIPTION, PROTECTION
@@ -100,13 +100,13 @@ class TestScheduleManager(unittest.TestCase):
         self.assertEqual(view.schedules[schedule_id], expected_structure)
 
     def test_delete_user(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         user = self.schedule_manager.user_instance(user_id)
         self.schedule_manager.delete_user(user)
         self.assertIsNone(self.schedule_manager.user_instance(user_id))
 
     def test_delete_schedule(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         schedule_id = self.schedule_manager.create_schedule(
             user_id, DESCRIPTION, PROTECTION
         )
@@ -117,7 +117,7 @@ class TestScheduleManager(unittest.TestCase):
         self.assertIsNone(self.schedule_manager.schedule_instance(schedule_id))
 
     def test_delete_view(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         view_id = self.schedule_manager.create_view(user_id, DESCRIPTION)
         view = self.schedule_manager.view_instance(view_id)
         self.schedule_manager.delete_view(
@@ -126,7 +126,7 @@ class TestScheduleManager(unittest.TestCase):
         self.assertIsNone(self.schedule_manager.view_instance(view_id))
 
     def test_delete_event(self):
-        user_id = self.schedule_manager.create_or_get_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
+        user_id = self.schedule_manager.create_user(USERNAME, EMAIL, FULLNAME, PASSWORD)
         schid = self.schedule_manager.create_schedule(user_id, DESCRIPTION, PROTECTION)
         event_id = self.schedule_manager.create_event(
             schid, TYPE, START, END, PERIOD, DESCRIPTION, LOCATION, PROTECTION, ASSIGNEE
