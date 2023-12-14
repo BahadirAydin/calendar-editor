@@ -41,11 +41,12 @@ def process_request(request, thread_id):
         elif command == "signin":
             return handle_signin(parts[1:])
 
-        if not ScheduleManager().is_logged_in(thread_id):
-            return "You should authenticate to proceed."
-
         username = ScheduleManager().get_user_by_thread_id(thread_id)
         id = ScheduleManager().get_user_id(username)
+
+        if not ScheduleManager().is_logged_in(username):
+            return "You should authenticate to proceed."
+
 
         if command == "addschedule":
             return handle_addschedule(parts[1:], id)

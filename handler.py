@@ -77,9 +77,9 @@ def handle_signin(request):
 
 
 def handle_addschedule(request, user_id):
-    if len(request) == 3:
-        description = request[1]
-        protection = request[2]
+    if len(request) == 2:
+        description = request[0]
+        protection = request[1]
 
         if ScheduleManager().create_schedule(user_id, description, protection):
             return "Schedule added successfully"

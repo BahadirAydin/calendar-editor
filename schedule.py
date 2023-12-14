@@ -3,6 +3,7 @@ import uuid
 from event import Event
 import sqlite3
 
+
 class Schedule:
     def __init__(self, description, protection, user_id):
         self.id = uuid.uuid4()
@@ -45,10 +46,15 @@ class Schedule:
 
     def delete(self):
         pass
-    
+
     def save(self):
         with sqlite3.connect("project.sql3") as db:
             c = db.cursor()
-            if c.execute("select * from schedule where id=?", (self.id,)).fetchone():
+            if c.execute(
+                "select * from schedule where id=?", (str(self.id),)
+            ).fetchone():
                 return False
-            c.execute("insert into user schedule (?,?,?,?)", (self.id, self.user_id, self.description, self.protection))
+            c.execute(
+                "INSERT INTO schedule (id, user_id, description, protection) VALUES (?, ?, ?, ?)",
+                (str(self.id), str(self.user_id), self.description, self.protection),
+            )
