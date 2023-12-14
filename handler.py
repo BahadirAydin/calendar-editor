@@ -33,6 +33,7 @@ def handle_adduser(request):
         email = request[1]
         if not verify_password(request[3]):
             return "Password must be at least 6 characters long"
+        fullname = request[2]
         password = request[3]
         if ScheduleManager().create_or_get_user(username, email, fullname, password):
             return f"User {username} added successfully"
@@ -67,7 +68,7 @@ def handle_signin(request):
         password = request[1]
         if User.login(username, password):
             # FIXME
-            # ScheduleManager().save_session(threading.get_ident(), username)
+            ScheduleManager().save_session(threading.get_ident(), username, None)
             return f"User {username} signed in successfully"
         else:
             return "Invalid username or password"
