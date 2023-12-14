@@ -25,7 +25,7 @@ def handle_client(connection, address):
             request = connection.recv(1024).decode()
             if not request:
                 break
-            
+
             response = process_request(request, threading.get_ident())
             connection.sendall(response.encode())
     finally:
@@ -40,14 +40,25 @@ def process_request(request, thread_id):
             return handle_adduser(parts[1:])
         elif command == "signin":
             return handle_signin(parts[1:])
-        
+
         if not ScheduleManager().is_logged_in(thread_id):
             return "You should authenticate to proceed."
-        
+
+        username = ScheduleManager().get_user_by_thread_id(thread_id)
+        id = ScheduleManager().get_user_id(username)
+
         if command == "addschedule":
-            return handle_addschedule(parts[1:])
+            return handle_addschedule(parts[1:], id)
         elif command == "deleteschedule":
-            return handle_deleteschedule(parts[1:])
+            return handle_deleteschedule(parts[1:], id)
+        elif command == "deleteuser":
+            return handle_deleteuser(parts[1:])
+        elif command == "addevent":
+            return handle_addevent(parts[1:], id)
+        elif command == "PRINTUSER":
+            return handle_printuser(id)
+        elif command == "PRINTSCHEDULE":
+            return handle_printschedule(parts[1:], id)
 
     return HELP_TEXT
 

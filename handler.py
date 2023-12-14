@@ -1,3 +1,4 @@
+from user import User
 from schedule_manager import ScheduleManager
 import re
 
@@ -45,7 +46,7 @@ def handle_deleteuser(request):
     if len(request) == 2:
         username = request[0]
         password = request[1]
-        if ScheduleManager().login(username, password):
+        if User.login(username, password):
             if ScheduleManager().delete_user_by_id(
                 ScheduleManager().get_user_id(username)
             ):
@@ -64,7 +65,7 @@ def handle_signin(request):
     if len(request) == 2:
         username = request[0]
         password = request[1]
-        if ScheduleManager().login(username, password):
+        if User.login(username, password):
             return f"User {username} signed in successfully"
         else:
             return "Invalid username or password"
@@ -72,16 +73,10 @@ def handle_signin(request):
         return "Missing or too much arguments.\n signin requires <username> <password>"
 
 
-def handle_addschedule(request):
+def handle_addschedule(request, user_id):
     if len(request) == 3:
-        username = request[0]
         description = request[1]
         protection = request[2]
-
-        if not ScheduleManager().user_exists(username):
-            return "User does not exist"
-
-        user_id = ScheduleManager().get_user_id(username)
 
         if ScheduleManager().create_schedule(user_id, description, protection):
             return "Schedule added successfully"
@@ -91,15 +86,43 @@ def handle_addschedule(request):
         return "Missing or too many arguments.\n addschedule requires <username> <description> <protection>"
 
 
-def handle_deleteschedule(request):
+def handle_addevent(request, userid):
+    if len(request) == 9:
+        schedule_name = request[0]
+        event_type = request[1]
+        start = request[4]
+        end = request[5]
+        period = request[6]
+        description = request[7]
+        location = request[8]
+        protection = request[9]
+        assignee = request[10]
+
+        if not ScheduleManager().schedule_exists(userid, schedule_name):
+            return "Schedule does not exist"
+
+        if ScheduleManager().create_event(
+            schedule_name,
+            event_type,
+            start,
+            end,
+            period,
+            description,
+            location,
+            protection,
+            assignee,
+        ):
+            return "Event added successfully"
+        else:
+            return "Database error"
+    else:
+        return "Missing or too many arguments.\n addevent requires <schedule_name> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>"
+
+
+def handle_deleteschedule(request, user_id):
     if len(request) == 2:
-        username = request[0]
         schedule_id = request[1]
 
-        if not ScheduleManager().user_exists(username):
-            return "User does not exist"
-
-        user_id = ScheduleManager().get_user_id(username)
         if not ScheduleManager().schedule_exists(user_id, schedule_id):
             return "Schedule does not exist"
 
@@ -109,3 +132,20 @@ def handle_deleteschedule(request):
             return "Database error"
     else:
         return "Missing or too many arguments.\n deleteschedule requires <username> <schedule_id>"
+
+
+#### PRINT
+
+
+def handle_printuser(user_id):
+    user = ScheduleManager().get_user_by_id(user_id)
+    return user
+
+
+def handle_printschedule(request, user_id):
+    if len(request) == 1:
+        description = request[0]
+        schedule = ScheduleManager().get_schedule_by_description(user_id, description)
+        return schedule
+    else:
+        return "Missing or too many arguments.\n printschedule requires <schedule_description>"

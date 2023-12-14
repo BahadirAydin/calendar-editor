@@ -1,4 +1,7 @@
 from user import User
+from schedule import Schedule
+from view import View
+from event import Event
 import threading
 import sqlite3
 import uuid
@@ -80,14 +83,14 @@ class ScheduleManager:
             query = f"delete from user where id={user_id}"
             c.execute(query)
             db.commit()
-        
+
     def save_session(self, thread_id, username, obj):
-        if(thread_id not in self._session_map):
+        if thread_id not in self._session_map:
             self._session_map[thread_id] = {username: username, obj: obj}
-    
+
     def is_logged_in(self, username):
         for thread_id in self._session_map:
-            if(self._session_map[thread_id]["username"] == username):
+            if self._session_map[thread_id]["username"] == username:
                 return True
         return False
 
@@ -99,12 +102,9 @@ class ScheduleManager:
         with self.mutex:
             if self.schedule_exists(userid, description):
                 return None
-            id = uuid.uuid4()
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"insert into schedule (id, user_id, description, protection_level) values ({id}, {userid}, '{description}', {protection_level})"
-            c.execute(query)
-            db.commit()
+            schedule = Schedule(userid, description, protection_level)
+            schedule.save()
+            return schedule
 
     def get_schedule_by_id(self, schid):
         with self.mutex:
@@ -120,6 +120,14 @@ class ScheduleManager:
         query = f"select id from schedule where user_id={userid} and description='{description}'"
         row = c.execute(query)
         return row.fetchone()[0]
+
+    def get_schedule_by_description(self, userid, description):
+        with self.mutex:
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"select * from schedule where user_id={userid} and description='{description}'"
+            row = c.execute(query)
+            return row.fetchone()
 
     def schedule_exists(self, userid, description):
         db = sqlite3.connect("project.sql3")
@@ -181,12 +189,19 @@ class ScheduleManager:
         with self.mutex:
             if self.event_exists(schid, description, start, end):
                 return None
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            id = uuid.uuid4()
-            query = f"insert into event (id, schedule_id, event_type, start, end, period, description, location, protection_level, assignee) values ({id}, {schid}, {event_type}, {start}, {end}, {period}, '{description}', '{location}', {protection}, {assignee})"
-            c.execute(query)
-            db.commit()
+            event = Event(
+                event_type,
+                start,
+                end,
+                period,
+                description,
+                location,
+                protection,
+                assignee,
+                schid,
+            )
+            event.save()
+            return event
 
     def get_event_by_id(self, event_id):
         with self.mutex:
@@ -238,24 +253,10 @@ class ScheduleManager:
     # Other Helper Functions
     # -------------------------
 
-    def login(self, username, passwd):
-        with self.mutex:
-            if User.login(username, passwd):
-                db = sqlite3.connect("project.sql3")
-                c = db.cursor()
-                token = uuid.uuid4()
-                date = datetime.datetime.now()
-                query = f"insert into sessions (token, username, created_at) values ('{token}', '{username}', '{date}')"
-                c.execute(query)
-                db.commit()
-                return token
-            return None
+    def is_user_authenticated(self, username):
+        for thread_id in self._session_map:
+            if self._session_map[thread_id]["username"] == username:
+                return True
 
-    def is_user_authenticated(self, token):
-        db = sqlite3.connect("project.sql3")
-        c = db.cursor()
-        query = f"select * from sessions where token='{token}'"
-        row = c.execute(query)
-        if row.fetchone():
-            return True
-        return False
+    def get_user_by_thread_id(self, thread_id):
+        return self._session_map[thread_id].get("username")
