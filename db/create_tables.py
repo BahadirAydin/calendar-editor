@@ -60,11 +60,8 @@ cursor.execute(
     """
         CREATE TABLE IF NOT EXISTS view (
             id TEXT,
-            user_id INTEGER,
-            schedule_id INTEGER,
-            FOREIGN KEY (user_id) REFERENCES user(id),
-            FOREIGN KEY (schedule_id) REFERENCES schedule(id),
-            PRIMARY KEY (id, user_id, schedule_id)
+            description TEXT,
+            PRIMARY KEY (id)
             )
         """
 )

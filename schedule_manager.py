@@ -8,17 +8,6 @@ import sqlite3
 import uuid
 import datetime
 
-# NOTE
-# WE HAVE CREATE, GET, UPDATE, DELETE
-# FOR USER, SCHEDULE, VIEW, EVENT
-# TODO VIEW FUNCTIONS, I COULDNT UNDERSTAND THE LOGIC
-
-# TODO SELAM DENİZ
-# BEN BU TOKEN MANTIĞINI ANLAMADIM BİRAZ BAKABİLİR MİSİN
-# SANKİ BİZİM SESSON'DA ÜRETTİĞİMİZ TOKENI DİĞER SOCKET'E
-# GÖNDERMEMİZ GEREKİYOR GİBİ DURUYOR AMA BİLMİYORUM
-
-
 class ScheduleManager:
     _instance = None
     _session_map = dict()
@@ -26,8 +15,6 @@ class ScheduleManager:
     schedules = []
     events = []
     views = []
-    schedules_and_views = []
-    users_and_views = []
 
     def __new__(cls):
         if cls._instance is None:
@@ -38,12 +25,13 @@ class ScheduleManager:
     # -------------------------
     # User-related Functions
     # -------------------------
-    def create_or_get_user(self, username, email, fullname, passwd):
+    def create_user(self, username, email, fullname, passwd):
         with self.mutex:
             if self.user_exists(username):
                 return None
             user = User(username, email, fullname, passwd)
             user.save()
+            self.users.append(user)
             return user
 
     def get_user_id(self, username):
@@ -59,12 +47,11 @@ class ScheduleManager:
 
     def get_user_by_id(self, user_id):
         with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"select * from user where id={user_id}"
-            row = c.execute(query)
-            return row.fetchone()
-
+            for user in self.users:
+                if user.id == user_id:
+                    return user
+        return None  
+    
     def user_exists(self, username):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
@@ -88,20 +75,15 @@ class ScheduleManager:
 
     def delete_user_by_id(self, user_id):
         with self.mutex:
-            try:
-                db = sqlite3.connect("project.sql3")
-                c = db.cursor()
-                query = f"delete from schedule where user_id='{user_id}'"
-                c.execute(query)
-                query = f"delete from user where id='{user_id}'"
-                c.execute(query)
-                db.commit()
-                return True
-            except Exception as e:
-                print(e)
-                return False
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"delete from user where id={user_id}"
+            c.execute(query)
+            db.commit()
+            for user in self.users:
+                if(user.id == user_id):
+                    self.users.remove(user)
 
-    # HACK obj is not required imo
     def save_session(self, thread_id, username, obj):
         if thread_id not in self._session_map:
             self._session_map[thread_id] = {"username": username, "obj": obj}
@@ -122,6 +104,7 @@ class ScheduleManager:
                 return None
             schedule = Schedule(description, protection_level, userid)
             schedule.save()
+            self.schedules.append(schedule)
             return schedule
 
     def get_schedule_by_id(self, schid):
@@ -201,6 +184,11 @@ class ScheduleManager:
             query = f"delete from view where id='{view_id}'"
             c.execute(query)
             db.commit()
+
+    def create_view(self, description):
+        view = View(description)
+        view.save()
+        self.views.append(view)
 
     # -------------------------
     # Event-related Functions
