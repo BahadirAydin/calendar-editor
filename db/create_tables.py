@@ -52,7 +52,7 @@ cursor.execute(
       protection TEXT,
       assignee TEXT,
       FOREIGN KEY (assignee) REFERENCES user(username),
-      FOREIGN KEY (schedule_id) REFERENCES schedule(id) ) 
+      FOREIGN KEY (schedule_id) REFERENCES schedule(id)) 
     """
 )
 

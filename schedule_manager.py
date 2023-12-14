@@ -1,3 +1,4 @@
+from os import wait
 from user import User
 from schedule import Schedule
 from view import View
@@ -39,7 +40,10 @@ class ScheduleManager:
             c = db.cursor()
             query = f"select id from user where username='{username}'"
             row = c.execute(query)
-            return row.fetchone()[0]
+            v = row.fetchone()
+            if v is None:
+                return None
+            return v[0]
 
     def get_user_by_id(self, user_id):
         with self.mutex:
@@ -94,11 +98,11 @@ class ScheduleManager:
     # Schedule-related Functions
     # -------------------------
 
-    def create_schedule(self, userid, description, protection_level):
+    def create_schedule(self, description, protection_level, userid):
         with self.mutex:
             if self.schedule_exists(userid, description):
                 return None
-            schedule = Schedule(userid, description, protection_level)
+            schedule = Schedule(description, protection_level, userid)
             schedule.save()
             self.schedules.append(schedule)
             return schedule
@@ -107,29 +111,36 @@ class ScheduleManager:
         with self.mutex:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
-            query = f"select * from schedule where id={schid}"
+            query = f"select * from schedule where id='{schid}'"
             row = c.execute(query)
             return row.fetchone()
 
     def get_schedule_id(self, userid, description):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
-        query = f"select id from schedule where user_id='{userid}' and description='{description}'"
+        query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
         row = c.execute(query)
-        return row.fetchone()[0]
+        v = row.fetchone()
+        if v is None:
+            return None
+        return v[0]
 
     def get_schedule_by_description(self, userid, description):
         with self.mutex:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
-            query = f"select * from schedule where user_id='{userid}' and description='{description}'"
+            query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
             row = c.execute(query)
-            return row.fetchone()
+            v = row.fetchone()
+            if v is None:
+                return None
+            return v[0]
 
     def schedule_exists(self, userid, description):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
-        query = f"select * from schedule where user_id='{userid}' and description='{description}'"
+        query = f"select * from schedule where user_id='{userid}' AND description='{description}'"
+        print(query)
         row = c.execute(query)
         if row.fetchone():
             return True
@@ -147,15 +158,20 @@ class ScheduleManager:
             c.execute(query)
             db.commit()
 
-    def delete_schedule(self, user, schid):
+    def delete_schedule(self, schid):
         with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"delete from schedule where id={schid}"
-            c.execute(query)
-            db.commit()
-            for schedule in self.schedules:
-                self.schedules.remove(schedule)
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                query = f"delete from event where schedule_id='{schid}'"
+                c.execute(query)
+                query = f"delete from schedule where id='{schid}'"
+                c.execute(query)
+                db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
 
     # -------------------------
     # View-related Functions
@@ -165,7 +181,7 @@ class ScheduleManager:
         with self.mutex:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
-            query = f"delete from view where id={view_id}"
+            query = f"delete from view where id='{view_id}'"
             c.execute(query)
             db.commit()
 
@@ -219,19 +235,19 @@ class ScheduleManager:
         with self.mutex:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
-            query = f"select id from event where schedule_id={schid} and description='{description}'"
+            query = f"select id from event where schedule_id='{schid}' AND description='{description}'"
             row = c.execute(query)
             return row.fetchone()[0]
 
     def event_exists(self, schid, description, start, end):
-        with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"select * from event where schedule_id={schid} and description='{description}' and start='{start}' and end='{end}'"
-            row = c.execute(query)
-            if row.fetchone():
-                return True
-            return False
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from event where schedule_id='{schid}' AND description='{description}' AND start_time='{start}' AND end_time='{end}'"
+        print(query)
+        row = c.execute(query)
+        if row.fetchone():
+            return True
+        return False
 
     def update_event(self, **kwargs):
         with self.mutex:
@@ -263,4 +279,5 @@ class ScheduleManager:
                 return True
 
     def get_user_by_thread_id(self, thread_id):
-        return self._session_map.get(thread_id, None).get("username", None)
+        if thread_id in self._session_map:
+            return self._session_map[thread_id].get("username")

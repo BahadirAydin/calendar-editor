@@ -81,7 +81,7 @@ def handle_addschedule(request, user_id):
         description = request[0]
         protection = request[1]
 
-        if ScheduleManager().create_schedule(user_id, description, protection):
+        if ScheduleManager().create_schedule(description, protection, user_id):
             return "Schedule added successfully"
         else:
             return "Database error"
@@ -93,19 +93,21 @@ def handle_addevent(request, userid):
     if len(request) == 9:
         schedule_name = request[0]
         event_type = request[1]
-        start = request[4]
-        end = request[5]
-        period = request[6]
-        description = request[7]
-        location = request[8]
-        protection = request[9]
-        assignee = request[10]
+        start = request[2]
+        end = request[3]
+        period = request[4]
+        description = request[5]
+        location = request[6]
+        protection = request[7]
+        assignee = request[8]
 
         if not ScheduleManager().schedule_exists(userid, schedule_name):
             return "Schedule does not exist"
 
+        schid = ScheduleManager().get_schedule_id(userid, schedule_name)
+
         if ScheduleManager().create_event(
-            schedule_name,
+            schid,
             event_type,
             start,
             end,
@@ -123,13 +125,14 @@ def handle_addevent(request, userid):
 
 
 def handle_deleteschedule(request, user_id):
-    if len(request) == 2:
-        schedule_id = request[1]
+    if len(request) == 1:
+        description = request[0]
 
-        if not ScheduleManager().schedule_exists(user_id, schedule_id):
+        if not ScheduleManager().schedule_exists(user_id, description):
             return "Schedule does not exist"
 
-        if ScheduleManager().delete_schedule(user_id, schedule_id):
+        schedule_id = ScheduleManager().get_schedule_id(user_id, description)
+        if ScheduleManager().delete_schedule(schedule_id):
             return "Schedule deleted successfully"
         else:
             return "Database error"
@@ -149,6 +152,6 @@ def handle_printschedule(request, user_id):
     if len(request) == 1:
         description = request[0]
         schedule = ScheduleManager().get_schedule_by_description(user_id, description)
-        return schedule
+        return str(schedule)
     else:
         return "Missing or too many arguments.\n printschedule requires <schedule_description>"
