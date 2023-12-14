@@ -69,6 +69,33 @@ cursor.execute(
         """
 )
 
+cursor.execute(
+    """
+        CREATE TABLE IF NOT EXISTS views_and_schedules (
+            id TEXT,
+            schedule_id TEXT,
+            view_id TEXT,
+            FOREIGN KEY (schedule_id) REFERENCES schedule(id),
+            FOREIGN KEY (view_id) REFERENCES view(id),
+            PRIMARY KEY (id, schedule_id, view_id)
+            )
+        """
+)
+
+cursor.execute(
+    """
+        CREATE TABLE IF NOT EXISTS users_and_views (
+            id TEXT,
+            user_id TEXT,
+            view_id TEXT,
+            is_attached INTEGER DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES user(id),
+            FOREIGN KEY (view_id) REFERENCES view(id),
+            PRIMARY KEY (id, user_id, view_id)
+            )
+        """
+)
+
 conn.commit()
 
 conn.close()

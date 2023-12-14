@@ -21,6 +21,12 @@ import datetime
 class ScheduleManager:
     _instance = None
     _session_map = dict()
+    users = []
+    schedules = []
+    events = []
+    views = []
+    schedules_and_views = []
+    users_and_views = []
 
     def __new__(cls):
         if cls._instance is None:

@@ -5,6 +5,7 @@ class TCPClient:
         self.host = host
         self.port = port
         self.socket = None
+        self.token = None
 
     def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
