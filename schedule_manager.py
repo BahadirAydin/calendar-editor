@@ -82,7 +82,7 @@ class ScheduleManager:
 
     def save_session(self, thread_id, username, obj):
         if thread_id not in self._session_map:
-            self._session_map[thread_id] = {username: username, obj: obj}
+            self._session_map[thread_id] = {"username": username, "obj": obj}
 
     def is_logged_in(self, username):
         for thread_id in self._session_map:
@@ -114,7 +114,7 @@ class ScheduleManager:
     def get_schedule_id(self, userid, description):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
-        query = f"select id from schedule where user_id={userid} and description='{description}'"
+        query = f"select id from schedule where user_id='{userid}' and description='{description}'"
         row = c.execute(query)
         return row.fetchone()[0]
 
@@ -122,14 +122,14 @@ class ScheduleManager:
         with self.mutex:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
-            query = f"select * from schedule where user_id={userid} and description='{description}'"
+            query = f"select * from schedule where user_id='{userid}' and description='{description}'"
             row = c.execute(query)
             return row.fetchone()
 
     def schedule_exists(self, userid, description):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
-        query = f"select * from schedule where user_id={userid} and description='{description}'"
+        query = f"select * from schedule where user_id='{userid}' and description='{description}'"
         row = c.execute(query)
         if row.fetchone():
             return True
@@ -263,4 +263,4 @@ class ScheduleManager:
                 return True
 
     def get_user_by_thread_id(self, thread_id):
-        return self._session_map[thread_id].get("username")
+        return self._session_map.get(thread_id, None).get("username", None)
