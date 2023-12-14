@@ -6,6 +6,7 @@ from event import Event
 import threading
 import sqlite3
 import uuid
+import hashlib
 import datetime
 
 
@@ -75,17 +76,20 @@ class ScheduleManager:
             return True
         return False
 
-    def update_user(self, **kwargs):
+    def update_user(self, user_id, new_password):
         with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"update user set "
-            for key, value in kwargs.items():
-                query += f"{key}={value},"
-            query = query[:-1]
-            query += f" where id={kwargs['id']}"
-            c.execute(query)
-            db.commit()
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                username = self.get_username_by_id(user_id)
+                pwd = str(hashlib.sha256(new_password.encode()).hexdigest())
+                query = f"update auth set password='{pwd}' where username='{username}'"
+                c.execute(query)
+                db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
 
     def delete_user_by_id(self, user_id):
         with self.mutex:

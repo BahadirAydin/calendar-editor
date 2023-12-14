@@ -62,6 +62,22 @@ def handle_deleteuser(request):
         )
 
 
+def handle_changepassword(request, user_id):
+    if len(request) == 3:
+        username = request[0]
+        password = request[1]
+        new_password = request[2]
+        if User.login(username, password):
+            if ScheduleManager().update_user(user_id, new_password):
+                return f"User {username} updated successfully"
+            else:
+                return "Database error"
+        else:
+            return "Invalid username or password"
+    else:
+        return "Missing or too much arguments.\n changepassword requires <username> <password> <new_password>"
+
+
 def handle_signin(request):
     if len(request) == 2:
         username = request[0]

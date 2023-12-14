@@ -47,7 +47,6 @@ def process_request(request, thread_id):
         if not ScheduleManager().is_logged_in(username):
             return "You should authenticate to proceed."
 
-
         if command == "addschedule":
             return handle_addschedule(parts[1:], id)
         elif command == "deleteschedule":
@@ -58,6 +57,8 @@ def process_request(request, thread_id):
             return handle_addevent(parts[1:], id)
         elif command == "deleteevent":
             return handle_deleteevent(parts[1:], id)
+        elif command == "changepassword":
+            return handle_changepassword(parts[1:], id)
         elif command == "PRINTUSER":
             return handle_printuser(id)
         elif command == "PRINTSCHEDULE":
