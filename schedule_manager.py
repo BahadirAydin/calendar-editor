@@ -84,6 +84,7 @@ class ScheduleManager:
             c.execute(query)
             db.commit()
 
+    # HACK obj is not required imo
     def save_session(self, thread_id, username, obj):
         if thread_id not in self._session_map:
             self._session_map[thread_id] = {username: username, obj: obj}

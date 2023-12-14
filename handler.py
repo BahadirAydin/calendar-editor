@@ -1,5 +1,6 @@
 from user import User
 from schedule_manager import ScheduleManager
+import threading
 import re
 
 
@@ -30,7 +31,6 @@ def handle_adduser(request):
         if not verify_email(request[1]):
             return "Invalid email address"
         email = request[1]
-        fullname = request[2].replace('"', "")
         if not verify_password(request[3]):
             return "Password must be at least 6 characters long"
         password = request[3]
@@ -66,6 +66,8 @@ def handle_signin(request):
         username = request[0]
         password = request[1]
         if User.login(username, password):
+            # FIXME
+            # ScheduleManager().save_session(threading.get_ident(), username)
             return f"User {username} signed in successfully"
         else:
             return "Invalid username or password"
