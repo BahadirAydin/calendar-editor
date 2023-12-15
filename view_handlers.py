@@ -35,3 +35,17 @@ def handle_detachview(request, user_id):
             return "Database error"
     else:
         return "Missing or too many arguments.\n detachview requires <view_name> <description>"
+
+
+def handle_addtoview(request, user_id):
+    if len(request) == 2:
+        view_description = request[0]
+        schedule_description = request[1]
+
+        if ScheduleManager().is_view_attached(view_description, user_id):
+            if ScheduleManager().add_to_view(view_description, schedule_description):
+                return "Schedule added to view successfully"
+            else:
+                return "Database error"
+        else:
+            return "View is not attached."

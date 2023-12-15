@@ -289,6 +289,16 @@ class ScheduleManager:
                 print(e)
                 return False
 
+    def is_view_attached(self, view_id, user_id):
+        with self.mutex:
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"select * from users_and_views where user_id='{user_id}' AND view_id='{view_id}'"
+            row = c.execute(query)
+            if row.fetchone():
+                return True
+            return False
+
     # -------------------------
     # Event-related Functions
     # -------------------------
