@@ -17,8 +17,8 @@ class ScheduleManager:
     schedules = []
     events = []
     views = []
-    users_and_views=[]
-    views_and_schedules=[]
+    users_and_views = []
+    views_and_schedules = []
 
     def __new__(cls):
         if cls._instance is None:
@@ -241,6 +241,15 @@ class ScheduleManager:
             c.execute(query)
             db.commit()
 
+    def view_exists(self, description):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from view where description='{description}'"
+        row = c.execute(query)
+        if row.fetchone():
+            return True
+        return False
+
     def create_view(self, description):
         with self.mutex:
             try:
@@ -268,6 +277,10 @@ class ScheduleManager:
     def attach_view(self, view_id, user_id):
         with self.mutex:
             try:
+                if self.is_view_attached(view_id, user_id) or not self.view_exists(
+                    view_id
+                ):
+                    return False
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
                 query = f"insert into users_and_views values ('{user_id}', '{view_id}')"
@@ -292,14 +305,13 @@ class ScheduleManager:
                 return False
 
     def is_view_attached(self, view_id, user_id):
-        with self.mutex:
-            db = sqlite3.connect("project.sql3")
-            c = db.cursor()
-            query = f"select * from users_and_views where user_id='{user_id}' AND view_id='{view_id}'"
-            row = c.execute(query)
-            if row.fetchone():
-                return True
-            return False
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from users_and_views where user_id='{user_id}' AND view_id='{view_id}'"
+        row = c.execute(query)
+        if row.fetchone():
+            return True
+        return False
 
     # -------------------------
     # Event-related Functions
