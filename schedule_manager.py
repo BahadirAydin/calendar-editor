@@ -176,11 +176,13 @@ class ScheduleManager:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
             query = f"select * from schedule where id='{schid}'"
+            print(query)
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
                 return None
             query = f"select * from event where schedule_id='{schid}'"
+            print(query)
             row = c.execute(query)
             events = row.fetchall()
             data = {
