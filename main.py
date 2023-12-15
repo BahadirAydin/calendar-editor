@@ -7,7 +7,8 @@ from view_handlers import *
 import atexit
 import shlex
 from retrieve_objects import retrieve_objects
-from colorama import Fore, Style
+import time
+import queue
 
 schedule_manager = ScheduleManager()
 
@@ -92,6 +93,17 @@ def process_request(request, thread_id):
 
     return HELP_TEXT
 
+def send_periodic_messages():
+    while True:
+        with schedule_manager._message_queue_lock:
+            for thread_id, data in schedule_manager._message_queue.items():
+                if not data["queue"].empty():
+                    try:
+                        message = data["queue"].get_nowait()
+                        data["connection"].sendall(message.encode())
+                    except queue.Empty:
+                        continue
+        time.sleep(1) 
 
 def start_server(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -105,13 +117,18 @@ def start_server(port):
 
     print(f"Server listening on port {port}")
 
+    threading.Thread(target=send_periodic_messages).start()
+
     while True:
         conn, addr = server_socket.accept()
         print(f"Connection from {addr}")
 
         client_thread = threading.Thread(target=handle_client, args=(conn, addr))
         client_thread.start()
+        client_thread_id = client_thread.ident
 
+        schedule_manager._message_queue[client_thread_id] = {"connection": conn, "queue": queue.Queue()}        
+        schedule_manager._message_queue[client_thread_id]["queue"].put("I NEED SLEEP")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TCP Server Application")
