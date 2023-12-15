@@ -76,8 +76,10 @@ def main(num_instances):
         cursor.execute("INSERT INTO views_and_schedules (schedule_id, view_id) VALUES (?, ?)",
                        (schedule_id, view_id))
 
-        cursor.execute("INSERT INTO users_and_views (user_id, view_id) VALUES (?, ?)",
-                       (user_id, view_id))
+        is_attached = random.choice([0,1])
+
+        cursor.execute("INSERT INTO users_and_views (user_id, view_id, is_attached) VALUES (?, ?, ?)",
+                       (user_id, view_id, is_attached))
         
     conn.commit()
     conn.close()
