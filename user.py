@@ -3,7 +3,6 @@ import hashlib
 import json
 import sqlite3
 
-
 class User:
     def __init__(self, username, email, fullname, passwd):
         self.id = str(uuid.uuid4())

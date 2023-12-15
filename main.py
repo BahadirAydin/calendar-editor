@@ -5,7 +5,8 @@ import threading
 from handler import *
 import atexit
 import shlex
-
+import sqlite3
+from retrieve_objects import retrieve_objects
 
 schedule_manager = ScheduleManager()
 
@@ -76,6 +77,8 @@ def start_server(port):
     atexit.register(server_socket.close)
 
     print(f"Server listening on port {port}")
+
+    retrieve_objects()
 
     while True:
         conn, addr = server_socket.accept()
