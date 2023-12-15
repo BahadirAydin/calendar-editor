@@ -84,6 +84,7 @@ cursor.execute(
         CREATE TABLE IF NOT EXISTS users_and_views (
             user_id TEXT,
             view_id TEXT,
+            is_attached INTEGER DEFAULT 0,
             FOREIGN KEY (user_id) REFERENCES user(id),
             FOREIGN KEY (view_id) REFERENCES view(id),
             PRIMARY KEY (user_id, view_id)
