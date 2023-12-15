@@ -121,8 +121,8 @@ def handle_signin(request):
         username = request[0]
         password = request[1]
         if User.login(username, password):
-            # FIXME
-            ScheduleManager().save_session(threading.get_ident(), username, None)
+            user = [u for u in ScheduleManager().users if u.username == username][0]
+            ScheduleManager().save_session(threading.get_ident(), username, user)
             return f"User {username} signed in successfully"
         else:
             return "Invalid username or password"
