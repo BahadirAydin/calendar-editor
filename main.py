@@ -99,9 +99,9 @@ def start_server(port):
     server_socket.listen()
     atexit.register(server_socket.close)
 
-    print(f"Server listening on port {port}")
-
     retrieve_objects()
+
+    print(f"Server listening on port {port}")
 
     while True:
         conn, addr = server_socket.accept()
