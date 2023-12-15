@@ -240,7 +240,7 @@ def handle_printschedule(request, user_id):
         output = (
             f"{Fore.YELLOW}Schedule ID:{Style.RESET_ALL} {schedule['id']}\n"
             f"{Fore.YELLOW}Description:{Style.RESET_ALL} {schedule['description']}\n"
-            f"{Fore.YELLOW}Protection Level:{Style.RESET_ALL} {schedule['protection_level']}\n"
+            f"{Fore.YELLOW}Protection Level:{Style.RESET_ALL} {schedule['protection']}\n"
             f"{Fore.YELLOW}User ID:{Style.RESET_ALL} {schedule['user_id']}\n"
             f"{Fore.YELLOW}Events:{Style.RESET_ALL}\n"
         )

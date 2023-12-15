@@ -145,14 +145,18 @@ class ScheduleManager:
             return row.fetchone()
 
     def get_schedule_id(self, userid, description):
-        db = sqlite3.connect("project.sql3")
-        c = db.cursor()
-        query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
-        row = c.execute(query)
-        v = row.fetchone()
-        if v is None:
+        try:
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
+            row = c.execute(query)
+            v = row.fetchone()
+            if v is None:
+                return None
+            return v[0]
+        except Exception as e:
+            print(e)
             return None
-        return v[0]
 
     def get_schedule_by_description(self, userid, description):
         with self.mutex:
@@ -180,7 +184,7 @@ class ScheduleManager:
             data = {
                 "id": v[0],
                 "description": v[2],
-                "protection_level": v[3],
+                "protection": v[3],
                 "user_id": v[1],
                 "events": events,
             }
@@ -316,7 +320,7 @@ class ScheduleManager:
             try:
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
-                query = f"update event set description='{description}', event_type='{event_type}', start_time='{start}', end_time='{end}', period='{period}', location='{location}', protection_level='{protection}', assignee='{assignee}' where schedule_id='{schid}' AND description='{old_description}'"
+                query = f"update event set description='{description}', event_type='{event_type}', start_time='{start}', end_time='{end}', period='{period}', location='{location}', protection='{protection}', assignee='{assignee}' where schedule_id='{schid}' AND description='{old_description}'"
                 c.execute(query)
                 db.commit()
                 return True
