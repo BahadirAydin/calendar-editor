@@ -242,9 +242,54 @@ class ScheduleManager:
             db.commit()
 
     def create_view(self, description):
-        view = View(description)
-        view.save()
-        self.views.append(view)
+        with self.mutex:
+            try:
+                view = View(description)
+                view.save()
+                self.views.append(view)
+                return True
+            except Exception as e:
+                print(e)
+                return False
+
+    def add_to_view(self, view_id, schedule_id):
+        with self.mutex:
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                query = f"insert into views_and_schedules values ('{view_id}', '{schedule_id}')"
+                c.execute(query)
+                db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
+
+    def attach_view(self, view_id, user_id):
+        with self.mutex:
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                query = f"insert into users_and_views values ('{user_id}', '{view_id}')"
+                c.execute(query)
+                db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
+
+    def detach_view(self, view_id, user_id):
+        with self.mutex:
+            try:
+                db = sqlite3.connect("project.sql3")
+                c = db.cursor()
+                query = f"delete from users_and_views where user_id='{user_id}' AND view_id='{view_id}'"
+                c.execute(query)
+                db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
 
     # -------------------------
     # Event-related Functions
