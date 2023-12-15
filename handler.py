@@ -4,7 +4,7 @@ import threading
 import re
 import json
 from colorama import Fore, Style
-
+import sqlite3 
 
 def verify_email(email):
     pat = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
@@ -93,6 +93,30 @@ def handle_updateevent(request, user_id):
             protection,
             assignee,
         ):
+            for event in ScheduleManager().events:
+                if event.schedule_id == schid and event.description == event_description:
+                    event.event_type = event_type
+                    event.start = start
+                    event.end = end
+                    event.period = period
+                    event.description = description
+                    event.location = location
+                    event.protection = protection
+                    event.assignee = assignee
+                    event.schedule_id = schid
+
+                    db = sqlite3.connect("project.sql3")
+                    c = db.cursor()
+                    query = (
+                        f"select * from views_and_schedules where schedule_id='{schid}' AND is_attached=1"
+                    )
+                    row = c.execute(query)
+                    if row.fetchone():
+                        assignee_thread = ScheduleManager().get_thread_id_by_username(assignee)
+                        ScheduleManager()._message_queue[assignee_thread]["queue"].put("YOUR VIEW HAS BEEN UPDATED")
+                        return True
+                    return False
+
             return "Event updated successfully"
         else:
             return "Database error"

@@ -129,7 +129,6 @@ def start_server(port):
         client_thread_id = client_thread.ident
 
         schedule_manager._message_queue[client_thread_id] = {"connection": conn, "queue": queue.Queue()}        
-        schedule_manager._message_queue[client_thread_id]["queue"].put("I NEED SLEEP")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TCP Server Application")

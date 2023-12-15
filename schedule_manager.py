@@ -458,3 +458,9 @@ class ScheduleManager:
     def get_user_by_thread_id(self, thread_id):
         if thread_id in self._session_map:
             return self._session_map[thread_id].get("username")
+    
+    def get_thread_id_by_username(self, username):
+            for thread_id in self._session_map:
+                if self._session_map[thread_id]["username"] == username:
+                    return thread_id
+
