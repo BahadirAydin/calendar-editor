@@ -17,6 +17,8 @@ def handle_createview(request, user_id):
 def handle_attachview(request, user_id):
     if len(request) == 1:
         description = request[0]
+        if ScheduleManager().is_user_attached(user_id):
+            return "User already attached to a view"
 
         view_id = ScheduleManager().get_view_id_by_description(description)
         if view_id is None:
