@@ -8,6 +8,7 @@ class View:
     def __init__(self, description):
         self.id = uuid.uuid4()
         self.description = description
+        self.is_attached = 0
         self.schedules = {}  # Stores schedules with their respective filters
 
     def addSchedule(self, schedule_id, schedule):

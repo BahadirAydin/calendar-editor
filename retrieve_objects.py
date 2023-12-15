@@ -83,16 +83,16 @@ def retrieve_objects():
 
     print("Mapping views to users...")
 
-    query_users_and_views = "SELECT user_id, view_id FROM users_and_views"
+    query_users_and_views = "SELECT user_id, view_id, is_attached FROM users_and_views"
     cursor.execute(query_users_and_views)
     results = cursor.fetchall()
 
     users_dict = {user.id: user for user in ScheduleManager().users}
 
-    for user_id, view_id in results:
-        user = users_dict.get(user_id)
-        view = next((v for v in ScheduleManager().views if v.id == view_id), None)
-
+    for result in results:
+        user = users_dict.get(result[0])
+        view = next((v for v in ScheduleManager().views if v.id == result[1]), None)
+        view.is_attached = result[2]
         if user and view:
             user.views.append(view)
 
