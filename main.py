@@ -87,6 +87,8 @@ def process_request(request, thread_id):
             return handle_printuser(id)
         elif command == "PRINTSCHEDULE":
             return handle_printschedule(parts[1:], id)
+        elif command == "PRINTVIEW":
+            return handle_printview(parts[1:], id)
 
     return HELP_TEXT
 
