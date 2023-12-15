@@ -74,12 +74,12 @@ def main(num_instances):
                        (view_id, view_description))
 
         # Insert data into views_and_schedules table
-        cursor.execute("INSERT INTO views_and_schedules (id, schedule_id, view_id) VALUES (?, ?, ?)",
-                       (str(uuid.uuid4()), schedule_id, view_id))
+        cursor.execute("INSERT INTO views_and_schedules (schedule_id, view_id) VALUES (?, ?)",
+                       (schedule_id, view_id))
 
         # Insert data into users_and_views table
-        cursor.execute("INSERT INTO users_and_views (id, user_id, view_id) VALUES (?, ?, ?)",
-                       (str(uuid.uuid4()), user_id, view_id))
+        cursor.execute("INSERT INTO users_and_views (user_id, view_id) VALUES (?, ?)",
+                       (user_id, view_id))
         
     conn.commit()
     conn.close()
