@@ -18,7 +18,8 @@ class Event:
         schedule_id,
     ):
         if event_type not in event_types:
-            raise ValueError("Unknown event type")
+            print("Invalid event type")
+            return None
         self.id = uuid.uuid4()
         self.event_type = event_type
         self.start = start
@@ -68,6 +69,7 @@ class Event:
                     self.end,
                     self.period,
                     self.description,
+                    self.event_type,
                     self.location,
                     self.protection,
                     self.assignee,

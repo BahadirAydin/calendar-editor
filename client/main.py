@@ -1,5 +1,10 @@
 from client import TCPClient
 import argparse
+from colorama import Fore, Style, init
+
+# Initialize colorama
+init(autoreset=True)
+
 
 def main(port_no):
     host = "localhost"
@@ -10,15 +15,12 @@ def main(port_no):
 
     try:
         while True:
-            message = input("Enter message to send: ")
+            message = input(f"{Fore.CYAN}Enter message to send:{Style.RESET_ALL} ")
             if message.lower() == "exit":
                 break
 
             response = client.send_request(message)
-            print("Response:\n", response)
-            
-            if(message.lower().startswith("signin")):
-                pass
+            print(f"{Fore.GREEN}Response: {Style.RESET_ALL}{response}")
     finally:
         client.close()
 

@@ -57,8 +57,12 @@ def process_request(request, thread_id):
             return handle_addevent(parts[1:], id)
         elif command == "deleteevent":
             return handle_deleteevent(parts[1:], id)
+        # UPDATE USER
         elif command == "changepassword":
             return handle_changepassword(parts[1:], id)
+        elif command == "updateevent":
+            return handle_updateevent(parts[1:], id)
+
         elif command == "PRINTUSER":
             return handle_printuser(id)
         elif command == "PRINTSCHEDULE":
