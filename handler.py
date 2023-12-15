@@ -81,7 +81,18 @@ def handle_updateevent(request, user_id):
             return "Schedule does not exist"
 
         schid = ScheduleManager().get_schedule_id(user_id, schedule_name)
-        if ScheduleManager().update_event(schid, event_description, event_type, start, end, period, description, location, protection, assignee):
+        if ScheduleManager().update_event(
+            schid,
+            event_description,
+            event_type,
+            start,
+            end,
+            period,
+            description,
+            location,
+            protection,
+            assignee,
+        ):
             return "Event updated successfully"
         else:
             return "Database error"

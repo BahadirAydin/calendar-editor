@@ -61,7 +61,7 @@ class Event:
             if c.execute("select * from event where id=?", (str(self.id),)).fetchone():
                 return False
             c.execute(
-                "insert into event values (?,?,?,?,?,?,?,?,?)",
+                "insert into event values (?,?,?,?,?,?,?,?,?,?)",
                 (
                     str(self.id),
                     str(self.schedule_id),
