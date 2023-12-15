@@ -241,6 +241,27 @@ class ScheduleManager:
             c.execute(query)
             db.commit()
 
+    def get_view_id_by_description(self, description):
+        try:
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"select id from view where description='{description}'"
+            row = c.execute(query)
+            v = row.fetchone()
+            if v is None:
+                return None
+            return v[0]
+        except Exception as e:
+            print(e)
+            return None
+
+    def get_schedules_in_view(self, view_id):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select schedule_id from views_and_schedules where view_id='{view_id}'"
+        row = c.execute(query)
+        return row.fetchall()
+
     def view_exists(self, description):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
