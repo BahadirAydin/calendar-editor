@@ -18,6 +18,16 @@ deleteuser <username> <password>
 signin <username> <password>
 addschedule <username> <description> <protection>
 deleteschedule <username> <schedule_id>
+addevent <username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>
+deleteevent <username> <schedule_id> <event_id>
+changepassword <username> <password> <new_password>
+updateevent <username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>
+createview <description>
+attachview <view_name> <description>
+detachview <view_name> <description>
+addtoview <view_name> <schedule_name>
+PRINTUSER <username>
+PRINTSCHEDULE <username> <schedule_id>
 """
 
 
@@ -70,6 +80,8 @@ def process_request(request, thread_id):
             return handle_attachview(parts[1:], id)
         elif command == "detachview":
             return handle_detachview(parts[1:], id)
+        elif command == "addtoview":
+            return handle_addtoview(parts[1:], id)
 
         elif command == "PRINTUSER":
             return handle_printuser(id)
