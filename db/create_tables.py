@@ -59,16 +59,6 @@ cursor.execute(
 
 cursor.execute(
     """
-        CREATE TABLE IF NOT EXISTS view (
-            id TEXT,
-            description TEXT,
-            PRIMARY KEY (id)
-            )
-        """
-)
-
-cursor.execute(
-    """
         CREATE TABLE IF NOT EXISTS views_and_schedules (
             view_id TEXT,
             schedule_id TEXT,
@@ -84,6 +74,7 @@ cursor.execute(
         CREATE TABLE IF NOT EXISTS users_and_views (
             user_id TEXT,
             view_id TEXT,
+            description TEXT,
             is_attached INTEGER DEFAULT 0,
             FOREIGN KEY (user_id) REFERENCES user(id),
             FOREIGN KEY (view_id) REFERENCES view(id),

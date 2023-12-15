@@ -77,7 +77,7 @@ def process_request(request, thread_id):
         elif command == "updateevent":
             return handle_updateevent(parts[1:], id)
         elif command == "createview":
-            return handle_createview(parts[1:])
+            return handle_createview(parts[1:], id)
         elif command == "attachview":
             return handle_attachview(parts[1:], id)
         elif command == "detachview":

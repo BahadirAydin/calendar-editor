@@ -167,6 +167,7 @@ class ScheduleManager:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
             query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
+            print(query)
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
@@ -249,7 +250,9 @@ class ScheduleManager:
         try:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
-            query = f"select id from view where description='{description}'"
+            query = (
+                f"select view_id from users_and_views where description='{description}'"
+            )
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
@@ -266,20 +269,31 @@ class ScheduleManager:
         row = c.execute(query)
         return row.fetchall()
 
-    def view_exists(self, description):
+    def view_exists(self, view_id):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
-        query = f"select * from view where description='{description}'"
+        query = f"select * from users_and_views where view_id='{ view_id}'"
         row = c.execute(query)
         if row.fetchone():
             return True
         return False
 
-    def create_view(self, description):
+    def is_user_attached(self, user_id):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = (
+            f"select * from users_and_views where user_id='{user_id}' AND is_attached=1"
+        )
+        row = c.execute(query)
+        if row.fetchone():
+            return True
+        return False
+
+    def create_view(self, description, user_id):
         with self.mutex:
             try:
                 view = View(description)
-                view.save()
+                view.save(user_id)
                 self.views.append(view)
                 return True
             except Exception as e:
@@ -302,13 +316,10 @@ class ScheduleManager:
     def attach_view(self, view_id, user_id):
         with self.mutex:
             try:
-                if self.is_view_attached(view_id, user_id) or not self.view_exists(
-                    view_id
-                ):
-                    return False
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
-                query = f"insert into users_and_views values ('{user_id}', '{view_id}')"
+                query = f"update users_and_views set is_attached=1 where user_id='{user_id}' AND view_id='{view_id}'"
+                print(query)
                 c.execute(query)
                 db.commit()
                 return True
@@ -321,7 +332,7 @@ class ScheduleManager:
             try:
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
-                query = f"delete from users_and_views where user_id='{user_id}' AND view_id='{view_id}'"
+                query = f"update users_and_views set is_attached=0 where user_id='{user_id}' AND view_id='{view_id}'"
                 c.execute(query)
                 db.commit()
                 return True
@@ -332,7 +343,8 @@ class ScheduleManager:
     def is_view_attached(self, view_id, user_id):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
-        query = f"select * from users_and_views where user_id='{user_id}' AND view_id='{view_id}'"
+        query = f"select * from users_and_views where user_id='{user_id}' AND view_id='{view_id}' AND is_attached=1"
+        print("CHECK", query)
         row = c.execute(query)
         if row.fetchone():
             return True

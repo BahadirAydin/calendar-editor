@@ -2,11 +2,11 @@ from schedule_manager import ScheduleManager
 from colorama import Fore, Style
 
 
-def handle_createview(request):
+def handle_createview(request, user_id):
     if len(request) == 1:
         description = request[0]
 
-        if ScheduleManager().create_view(description):
+        if ScheduleManager().create_view(description, user_id):
             return "View created successfully"
         else:
             return "Database error"
@@ -17,8 +17,13 @@ def handle_createview(request):
 def handle_attachview(request, user_id):
     if len(request) == 1:
         description = request[0]
+        if ScheduleManager().is_user_attached(user_id):
+            return "User already attached to a view"
 
-        if ScheduleManager().attach_view(description, user_id):
+        view_id = ScheduleManager().get_view_id_by_description(description)
+        if view_id is None:
+            return "View does not exist"
+        if ScheduleManager().attach_view(view_id, user_id):
             return "View attached successfully"
         else:
             return "Database error"
@@ -30,7 +35,10 @@ def handle_detachview(request, user_id):
     if len(request) == 1:
         description = request[0]
 
-        if ScheduleManager().detach_view(description, user_id):
+        view_id = ScheduleManager().get_view_id_by_description(description)
+        if view_id is None:
+            return "View does not exist"
+        if ScheduleManager().detach_view(view_id, user_id):
             return "View detached successfully"
         else:
             return "Database error"
@@ -43,11 +51,13 @@ def handle_addtoview(request, user_id):
         view_description = request[0]
         schedule_description = request[1]
 
-        if ScheduleManager().is_view_attached(view_description, user_id):
-            view_id = ScheduleManager().get_view_id_by_description(view_description)
-            schedule_id = ScheduleManager().get_schedule_id(
-                user_id, schedule_description
-            )
+        view_id = ScheduleManager().get_view_id_by_description(view_description)
+        if view_id is None:
+            return "View does not exist"
+        schedule_id = ScheduleManager().get_schedule_id(user_id, schedule_description)
+        if schedule_id is None:
+            return "Schedule does not exist"
+        if ScheduleManager().is_view_attached(view_id, user_id):
             if ScheduleManager().add_to_view(view_id, schedule_id):
                 return "Schedule added to view successfully"
             else:
@@ -60,11 +70,13 @@ def handle_printview(request, user_id):
     if len(request) == 1:
         view_description = request[0]
 
-        if ScheduleManager().is_view_attached(view_description, user_id):
-            view_id = ScheduleManager().get_view_id_by_description(view_description)
+        view_id = ScheduleManager().get_view_id_by_description(view_description)
+        if view_id is None:
+            return "View does not exist"
+        if ScheduleManager().is_view_attached(view_id, user_id):
             schedule_ids = ScheduleManager().get_schedules_in_view(view_id)
-            outer_output = ""
-            print(f"{Fore.YELLOW}View ID:{Style.RESET_ALL} {view_id}\n")
+            outer_output = f"{Fore.RED}View ID:{Style.RESET_ALL} {view_id}\n"
+
             for schedule_id in schedule_ids:
                 schedule = ScheduleManager().get_schedule_obj(schedule_id[0])
                 if schedule is None:
