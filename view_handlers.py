@@ -10,7 +10,9 @@ def handle_createview(request):
             return "View created successfully"
         else:
             return "Database error"
-    else: return "Missing or too many arguments.\n createview requires <description>"
+    else:
+        return "Missing or too many arguments.\n createview requires <description>"
+
 
 def handle_attachview(request, user_id):
     if len(request) == 1:
@@ -42,7 +44,11 @@ def handle_addtoview(request, user_id):
         schedule_description = request[1]
 
         if ScheduleManager().is_view_attached(view_description, user_id):
-            if ScheduleManager().add_to_view(view_description, schedule_description):
+            view_id = ScheduleManager().get_view_id_by_description(view_description)
+            schedule_id = ScheduleManager().get_schedule_id(
+                user_id, schedule_description
+            )
+            if ScheduleManager().add_to_view(view_id, schedule_id):
                 return "Schedule added to view successfully"
             else:
                 return "Database error"
@@ -57,20 +63,20 @@ def handle_printview(request, user_id):
         if ScheduleManager().is_view_attached(view_description, user_id):
             view_id = ScheduleManager().get_view_id_by_description(view_description)
             schedule_ids = ScheduleManager().get_schedules_in_view(view_id)
-            print(schedule_ids)
+            outer_output = ""
+            print(f"{Fore.YELLOW}View ID:{Style.RESET_ALL} {view_id}\n")
             for schedule_id in schedule_ids:
-                schedule = ScheduleManager().get_schedule_obj(schedule_id)
+                schedule = ScheduleManager().get_schedule_obj(schedule_id[0])
                 if schedule is None:
                     return "Schedule does not exist"
 
                 output = (
-                    f"{Fore.YELLOW}Schedule ID:{Style.RESET_ALL} {schedule['id']}\n"
+                    f"{Fore.RED}Schedule ID:{Style.RESET_ALL} {schedule['id']}\n"
                     f"{Fore.YELLOW}Description:{Style.RESET_ALL} {schedule['description']}\n"
                     f"{Fore.YELLOW}Protection Level:{Style.RESET_ALL} {schedule['protection']}\n"
                     f"{Fore.YELLOW}User ID:{Style.RESET_ALL} {schedule['user_id']}\n"
                     f"{Fore.YELLOW}Events:{Style.RESET_ALL}\n"
                 )
-
                 for event in schedule["events"]:
                     output += (
                         f"  {Fore.CYAN}Event ID:{Style.RESET_ALL} {event[0]}\n"
@@ -83,7 +89,9 @@ def handle_printview(request, user_id):
                         f"    {Fore.CYAN}Status:{Style.RESET_ALL} {event[7]}\n"
                         f"    {Fore.CYAN}Organizer:{Style.RESET_ALL} {event[8]}\n"
                     )
+                outer_output += output
 
+            return outer_output
         else:
             return "View is not attached."
     else:
