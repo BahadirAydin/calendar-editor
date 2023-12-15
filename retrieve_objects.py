@@ -53,7 +53,7 @@ def retrieve_objects():
     results = cursor.fetchall()
 
     for row in results:
-        event = Event(event_type=row[6], start=row[2], end=row[3], period=row[4], description=row[5], location=row[7], protection=row[8], assignee=row[9])
+        event = Event(event_type=row[6], start=row[2], end=row[3], period=row[4], description=row[5], location=row[7], protection=row[8], assignee=row[9], schedule_id=row[1])
         event.id = row[0]
         ScheduleManager().events.append(event)
 
@@ -75,13 +75,35 @@ def retrieve_objects():
     results = cursor.fetchall()
 
     schedules_dict = {schedule.id: schedule for schedule in ScheduleManager().schedules}
-
     for schedule_id, view_id in results:
         view = next((v for v in ScheduleManager().views if v.id == view_id), None)
         schedule = schedules_dict.get(schedule_id)
-
         if view and schedule:
             view.schedules[schedule_id] = schedule
 
+    print("Mapping views to users...")
+
+    query_users_and_views = "SELECT user_id, view_id FROM users_and_views"
+    cursor.execute(query_users_and_views)
+    results = cursor.fetchall()
+
+    users_dict = {user.id: user for user in ScheduleManager().users}
+
+    for user_id, view_id in results:
+        user = users_dict.get(user_id)
+        view = next((v for v in ScheduleManager().views if v.id == view_id), None)
+
+        if user and view:
+            user.views.append(view)
+
+    print("Mapping events to schedules...")
+    for event in ScheduleManager().events:
+        schedule_id = event.schedule_id
+        for schedule in ScheduleManager().schedules:
+            if schedule_id == schedule.id:
+                schedule.events.append(event) 
+    
     conn.close()   
 
+if __name__ == "__main__":
+    retrieve_objects()
