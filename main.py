@@ -9,6 +9,7 @@ import shlex
 from retrieve_objects import retrieve_objects
 import time
 import queue
+from colorama import Fore, Style
 
 schedule_manager = ScheduleManager()
 
