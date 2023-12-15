@@ -3,6 +3,7 @@ import argparse
 import socket
 import threading
 from handler import *
+from view_handlers import *
 import atexit
 import shlex
 
@@ -62,6 +63,12 @@ def process_request(request, thread_id):
             return handle_changepassword(parts[1:], id)
         elif command == "updateevent":
             return handle_updateevent(parts[1:], id)
+        elif command == "createview":
+            return handle_createview(parts[1:])
+        elif command == "attachview":
+            return handle_attachview(parts[1:], id)
+        elif command == "detachview":
+            return handle_detachview(parts[1:], id)
 
         elif command == "PRINTUSER":
             return handle_printuser(id)

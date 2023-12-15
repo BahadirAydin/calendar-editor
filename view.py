@@ -1,6 +1,7 @@
 import uuid
 import sqlite3
 
+
 class View:
     current_view = None  # To keep track of the main view for notifications
 
@@ -14,10 +15,14 @@ class View:
         with sqlite3.connect("project.sql3") as db:
             c = db.cursor()
             if c.execute(
-                "select * from views_and_schedules where schedule_id=? and view_id", (schedule_id, self.id)
+                "select * from views_and_schedules where schedule_id=? and view_id",
+                (schedule_id, self.id),
             ).fetchone():
                 return False
-            c.execute("insert into views_and_schedules values (?,?)", (self.id, self.description))
+            c.execute(
+                "insert into views_and_schedules values (?,?)",
+                (self.id, self.description),
+            )
             db.commit()
 
     def deleteSchedule(self, schedule_id):
@@ -26,7 +31,11 @@ class View:
         with sqlite3.connect("project.sql3") as db:
             c = db.cursor()
             if c.execute(
-                "delete from views_and_schedules where schedule_id=? and view_id=?", (schedule_id, self.id,)
+                "delete from views_and_schedules where schedule_id=? and view_id=?",
+                (
+                    schedule_id,
+                    self.id,
+                ),
             ).fetchone():
                 return False
             db.commit()
@@ -65,7 +74,6 @@ class View:
                 return False
             db.commit()
 
-
     def detachView(self, view_id):
         if self.current_view == view_id:
             self.current_view = None
@@ -78,15 +86,12 @@ class View:
                 return False
             db.commit()
 
-
     def save(self):
         with sqlite3.connect("project.sql3") as db:
             c = db.cursor()
-            if c.execute(
-                "select * from view where id=?", (self.id,)
-            ).fetchone():
+            if c.execute("select * from view where id=?", (str(self.id),)).fetchone():
                 return False
-            c.execute("insert into view values (?,?)", (self.id, self.description))
+            c.execute("insert into view values (?,?)", (str(self.id), self.description))
             db.commit()
 
     @classmethod
