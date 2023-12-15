@@ -5,19 +5,20 @@ from schedule import Schedule
 from event import Event
 import sqlite3
 
+
 def retrieve_objects():
-    conn = sqlite3.connect('project.sql3')
+    conn = sqlite3.connect("project.sql3")
     cursor = conn.cursor()
 
     print("Restoring state and initializing objects...")
 
     print("Restoring users...")
 
-    query_user = '''
+    query_user = """
         SELECT a.username, a.password, u.id, u.email, u.fullname
         FROM auth a
         JOIN user u ON a.username = u.username
-    '''
+    """
 
     cursor.execute(query_user)
 
@@ -30,10 +31,10 @@ def retrieve_objects():
 
     print("Restoring schedules...")
 
-    query_schedule = '''
+    query_schedule = """
         SELECT s.id, s.user_id, s.description, s.protection
         FROM schedule s
-    '''
+    """
 
     cursor.execute(query_schedule)
 
@@ -53,13 +54,23 @@ def retrieve_objects():
     results = cursor.fetchall()
 
     for row in results:
-        event = Event(event_type=row[6], start=row[2], end=row[3], period=row[4], description=row[5], location=row[7], protection=row[8], assignee=row[9], schedule_id=row[1])
+        event = Event(
+            schedule_id=row[1],
+            event_type=row[6],
+            start=row[2],
+            end=row[3],
+            period=row[4],
+            description=row[5],
+            location=row[7],
+            protection=row[8],
+            assignee=row[9],
+        )
         event.id = row[0]
         ScheduleManager().events.append(event)
 
     print("Restoring views...")
 
-    query_view = "SELECT id, description FROM view"
+    query_view = "SELECT user_id, view_id, description FROM users_and_views"
     cursor.execute(query_view)
     results = cursor.fetchall()
 
@@ -75,43 +86,12 @@ def retrieve_objects():
     results = cursor.fetchall()
 
     schedules_dict = {schedule.id: schedule for schedule in ScheduleManager().schedules}
+
     for schedule_id, view_id in results:
         view = next((v for v in ScheduleManager().views if v.id == view_id), None)
         schedule = schedules_dict.get(schedule_id)
+
         if view and schedule:
             view.schedules[schedule_id] = schedule
 
-    print("Mapping views to users...")
-
-    query_users_and_views = "SELECT user_id, view_id, is_attached FROM users_and_views"
-    cursor.execute(query_users_and_views)
-    results = cursor.fetchall()
-
-    users_dict = {user.id: user for user in ScheduleManager().users}
-
-    for result in results:
-        user = users_dict.get(result[0])
-        view = next((v for v in ScheduleManager().views if v.id == result[1]), None)
-        view.is_attached = result[2]
-        if user and view:
-            user.views.append(view)
-
-    print("Mapping events to schedules...")
-    for event in ScheduleManager().events:
-        schedule_id = event.schedule_id
-        for schedule in ScheduleManager().schedules:
-            if schedule_id == schedule.id:
-                schedule.events.append(event) 
-
-    print("Mapping schedules to users...")
-    for schedule in ScheduleManager().schedules:
-        user_id = schedule.user_id
-        for user in ScheduleManager().users:
-            if user.id == user_id:
-                user.schedules.append(schedule) 
-
-    
-    conn.close()   
-
-if __name__ == "__main__":
-    retrieve_objects()
+    conn.close()

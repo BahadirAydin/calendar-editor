@@ -62,9 +62,6 @@ class View:
                 return False
         return True
 
-    def attachView(self, view_id):
-        self.current_view = view_id
-
     def attachView(self, view_id, user_id):
         self.current_view = view_id
         with sqlite3.connect("project.sql3") as db:
@@ -87,12 +84,18 @@ class View:
                 return False
             db.commit()
 
-    def save(self):
+    def save(self, user_id):
         with sqlite3.connect("project.sql3") as db:
             c = db.cursor()
-            if c.execute("select * from view where id=?", (str(self.id),)).fetchone():
+            if c.execute(
+                "select * from users_and_views where view_id=?", (str(self.id),)
+            ).fetchone():
                 return False
-            c.execute("insert into view values (?,?)", (str(self.id), self.description))
+            c.execute(
+                "insert into users_and_views values (?,?,?,?)",
+                (str(user_id), str(self.id), self.description, 0),
+            )
+            print("View saved successfully")
             db.commit()
 
     @classmethod
