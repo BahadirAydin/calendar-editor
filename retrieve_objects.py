@@ -102,6 +102,14 @@ def retrieve_objects():
         for schedule in ScheduleManager().schedules:
             if schedule_id == schedule.id:
                 schedule.events.append(event) 
+
+    print("Mapping schedules to users...")
+    for schedule in ScheduleManager().schedules:
+        user_id = schedule.user_id
+        for user in ScheduleManager().users:
+            if user.id == user_id:
+                user.schedules.append(schedule) 
+
     
     conn.close()   
 
