@@ -2,6 +2,8 @@ from user import User
 from schedule_manager import ScheduleManager
 import threading
 import re
+import json
+from colorama import Fore, Style
 
 
 def verify_email(email):
@@ -60,6 +62,42 @@ def handle_deleteuser(request):
         return (
             "Missing or too much arguments.\n deleteuser requires <username> <password>"
         )
+
+
+def handle_updateevent(request, user_id):
+    if len(request) == 10:
+        schedule_name = request[0]
+        event_description = request[1]
+        event_type = request[2]
+        start = request[3]
+        end = request[4]
+        period = request[5]
+        description = request[6]
+        location = request[7]
+        protection = request[8]
+        assignee = request[9]
+
+        if not ScheduleManager().schedule_exists(user_id, schedule_name):
+            return "Schedule does not exist"
+
+        schid = ScheduleManager().get_schedule_id(user_id, schedule_name)
+        if ScheduleManager().update_event(
+            schid,
+            event_description,
+            event_type,
+            start,
+            end,
+            period,
+            description,
+            location,
+            protection,
+            assignee,
+        ):
+            return "Event updated successfully"
+        else:
+            return "Database error"
+    else:
+        return "Missing or too many arguments.\n updateevent requires <schedule_name> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>"
 
 
 def handle_changepassword(request, user_id):
@@ -178,13 +216,48 @@ def handle_deleteevent(request, user_id):
 
 def handle_printuser(user_id):
     user = ScheduleManager().get_user_by_id(user_id)
-    return user
+    if user is None:
+        return "User does not exist"
+    output = (
+        f"{Fore.YELLOW}User ID:{Style.RESET_ALL} {user['id']}\n"
+        f"{Fore.YELLOW}Username:{Style.RESET_ALL} {user['username']}\n"
+        f"{Fore.YELLOW}Email:{Style.RESET_ALL} {user['email']}\n"
+        f"{Fore.YELLOW}Full Name:{Style.RESET_ALL} {user['fullname']}\n"
+    )
+    return output
 
 
 def handle_printschedule(request, user_id):
     if len(request) == 1:
         description = request[0]
-        schedule = ScheduleManager().get_schedule_by_description(user_id, description)
-        return str(schedule)
+        schedule_id = ScheduleManager().get_schedule_by_description(
+            user_id, description
+        )
+        schedule = ScheduleManager().get_schedule_obj(schedule_id)
+        if schedule is None:
+            return "Schedule does not exist"
+
+        output = (
+            f"{Fore.YELLOW}Schedule ID:{Style.RESET_ALL} {schedule['id']}\n"
+            f"{Fore.YELLOW}Description:{Style.RESET_ALL} {schedule['description']}\n"
+            f"{Fore.YELLOW}Protection Level:{Style.RESET_ALL} {schedule['protection']}\n"
+            f"{Fore.YELLOW}User ID:{Style.RESET_ALL} {schedule['user_id']}\n"
+            f"{Fore.YELLOW}Events:{Style.RESET_ALL}\n"
+        )
+
+        for event in schedule["events"]:
+            output += (
+                f"  {Fore.CYAN}Event ID:{Style.RESET_ALL} {event[0]}\n"
+                f"    {Fore.CYAN}Schedule ID:{Style.RESET_ALL} {event[1]}\n"
+                f"    {Fore.CYAN}Start Time:{Style.RESET_ALL} {event[2]}\n"
+                f"    {Fore.CYAN}End Time:{Style.RESET_ALL} {event[3]}\n"
+                f"    {Fore.CYAN}Priority:{Style.RESET_ALL} {event[4]}\n"
+                f"    {Fore.CYAN}Name:{Style.RESET_ALL} {event[5]}\n"
+                f"    {Fore.CYAN}Location:{Style.RESET_ALL} {event[6]}\n"
+                f"    {Fore.CYAN}Status:{Style.RESET_ALL} {event[7]}\n"
+                f"    {Fore.CYAN}Organizer:{Style.RESET_ALL} {event[8]}\n"
+            )
+
+        return output
     else:
-        return "Missing or too many arguments.\n printschedule requires <schedule_description>"
+        return f"{Fore.RED}Missing or too many arguments.{Style.RESET_ALL}\n printschedule requires <schedule_description>"

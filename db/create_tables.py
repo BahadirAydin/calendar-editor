@@ -48,6 +48,7 @@ cursor.execute(
       end_time TEXT,
       period TEXT,
       description TEXT,
+      event_type TEXT,
       location TEXT,
       protection TEXT,
       assignee TEXT,

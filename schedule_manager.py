@@ -55,7 +55,8 @@ class ScheduleManager:
         v = row.fetchone()
         if v is None:
             return None
-        return v[0]
+
+        return {"id": v[0], "username": v[1], "email": v[2], "fullname": v[3]}
 
     def get_username_by_id(self, user_id):
         db = sqlite3.connect("project.sql3")
@@ -144,14 +145,18 @@ class ScheduleManager:
             return row.fetchone()
 
     def get_schedule_id(self, userid, description):
-        db = sqlite3.connect("project.sql3")
-        c = db.cursor()
-        query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
-        row = c.execute(query)
-        v = row.fetchone()
-        if v is None:
+        try:
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
+            row = c.execute(query)
+            v = row.fetchone()
+            if v is None:
+                return None
+            return v[0]
+        except Exception as e:
+            print(e)
             return None
-        return v[0]
 
     def get_schedule_by_description(self, userid, description):
         with self.mutex:
@@ -163,6 +168,27 @@ class ScheduleManager:
             if v is None:
                 return None
             return v[0]
+
+    def get_schedule_obj(self, schid):
+        with self.mutex:
+            db = sqlite3.connect("project.sql3")
+            c = db.cursor()
+            query = f"select * from schedule where id='{schid}'"
+            row = c.execute(query)
+            v = row.fetchone()
+            if v is None:
+                return None
+            query = f"select * from event where schedule_id='{schid}'"
+            row = c.execute(query)
+            events = row.fetchall()
+            data = {
+                "id": v[0],
+                "description": v[2],
+                "protection": v[3],
+                "user_id": v[1],
+                "events": events,
+            }
+            return data
 
     def schedule_exists(self, userid, description):
         db = sqlite3.connect("project.sql3")
@@ -277,17 +303,24 @@ class ScheduleManager:
             return True
         return False
 
-    def update_event(self, **kwargs):
+    def update_event(
+        self,
+        schid,
+        old_description,
+        event_type,
+        start,
+        end,
+        period,
+        description,
+        location,
+        protection,
+        assignee,
+    ):
         with self.mutex:
             try:
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
-                query = "UPDATE event SET "
-                for key, value in kwargs.items():
-                    query += f"{key}={value}, "
-                query = query[:-2]  # Remove the trailing comma and space
-                event_id = kwargs["id"]
-                query += f"WHERE id='{event_id}'"
+                query = f"update event set description='{description}', event_type='{event_type}', start_time='{start}', end_time='{end}', period='{period}', location='{location}', protection='{protection}', assignee='{assignee}' where schedule_id='{schid}' AND description='{old_description}'"
                 c.execute(query)
                 db.commit()
                 return True
