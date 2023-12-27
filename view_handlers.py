@@ -75,6 +75,7 @@ def handle_printview(request, user_id):
             return "View does not exist"
         if ScheduleManager().is_view_attached(view_id, user_id):
             schedule_ids = ScheduleManager().get_schedules_in_view(view_id)
+            print(schedule_ids)
             outer_output = f"{Fore.RED}View ID:{Style.RESET_ALL} {view_id}\n"
 
             for schedule_id in schedule_ids:

@@ -108,7 +108,7 @@ def handle_updateevent(request, user_id):
                     db = sqlite3.connect("project.sql3")
                     c = db.cursor()
                     query = (
-                        f"select * from views_and_schedules where schedule_id='{schid}' AND is_attached=1"
+                        f"select * from views_and_schedules where schedule_id='{schid}'"
                     )
                     row = c.execute(query)
                     if row.fetchone():
