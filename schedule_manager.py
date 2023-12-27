@@ -13,8 +13,6 @@ import datetime
 class ScheduleManager:
     _instance = None
     _session_map = dict()
-    _message_queue = dict()
-    _message_queue_lock = threading.Lock()
     users = []
     schedules = []
     events = []

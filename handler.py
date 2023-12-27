@@ -112,8 +112,6 @@ def handle_updateevent(request, user_id):
                     )
                     row = c.execute(query)
                     if row.fetchone():
-                        assignee_thread = ScheduleManager().get_thread_id_by_username(assignee)
-                        ScheduleManager()._message_queue[assignee_thread]["queue"].put("YOUR VIEW HAS BEEN UPDATED")
                         return True
                     return False
 
