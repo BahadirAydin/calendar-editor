@@ -1,13 +1,15 @@
 import json
 import uuid
 from event import Event
+import sqlite3
 
 
 class Schedule:
-    def __init__(self, description, protection):
+    def __init__(self, description, protection, user_id):
         self.id = uuid.uuid4()
         self.description = description
         self.protection = protection
+        self.user_id = user_id
         self.events = []
 
     def add_event(self, event):
@@ -19,7 +21,7 @@ class Schedule:
     def get(self):
         return json.dumps(
             {
-                "id": self.id,
+                "id": str(self.id),
                 "description": self.description,
                 "protection": self.protection,
                 "events": [event.get() for event in self.events],
@@ -44,3 +46,15 @@ class Schedule:
 
     def delete(self):
         pass
+
+    def save(self):
+        with sqlite3.connect("project.sql3") as db:
+            c = db.cursor()
+            if c.execute(
+                "select * from schedule where id=?", (str(self.id),)
+            ).fetchone():
+                return False
+            c.execute(
+                "INSERT INTO schedule (id, user_id, description, protection) VALUES (?, ?, ?, ?)",
+                (str(self.id), str(self.user_id), self.description, self.protection),
+            )

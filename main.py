@@ -1,124 +1,119 @@
-from event import Event
-from schedule import Schedule
-from user import User
-from view import View
+from schedule_manager import ScheduleManager
+import argparse
+import socket
+import threading
+from handler import *
+from view_handlers import *
+import atexit
+import shlex
+from retrieve_objects import retrieve_objects
+from colorama import Fore, Style
 
-users = []
-schedules = []
-current_user = None
+schedule_manager = ScheduleManager()
 
-def create_user():
-    username = input("Enter username: ")
-    email = input("Enter email: ")
-    fullname = input("Enter fullname: ")
-    passwd = input("Enter password: ")
-    user = User(username, email, fullname, passwd)
-    users.append(user)
-    print(f"User created with ID: {user.id}")
+HELP_TEXT = f"""{Fore.GREEN}Valid commands are:{Style.RESET_ALL}
+{Fore.CYAN}adduser {Fore.WHITE}<username> <email> <fullname> <password>{Style.RESET_ALL}
+{Fore.CYAN}deleteuser {Fore.WHITE}<username> <password>{Style.RESET_ALL}
+{Fore.CYAN}signin {Fore.WHITE}<username> <password>{Style.RESET_ALL}
+{Fore.CYAN}addschedule {Fore.WHITE}<username> <description> <protection>{Style.RESET_ALL}
+{Fore.CYAN}deleteschedule {Fore.WHITE}<username> <schedule_id>{Style.RESET_ALL}
+{Fore.CYAN}addevent {Fore.WHITE}<username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>{Style.RESET_ALL}
+{Fore.CYAN}deleteevent {Fore.WHITE}<username> <schedule_id> <event_id>{Style.RESET_ALL}
+{Fore.CYAN}changepassword {Fore.WHITE}<username> <password> <new_password>{Style.RESET_ALL}
+{Fore.CYAN}updateevent {Fore.WHITE}<username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>{Style.RESET_ALL}
+{Fore.CYAN}createview {Fore.WHITE}<description>{Style.RESET_ALL}
+{Fore.CYAN}attachview {Fore.WHITE}<view_name> <description>{Style.RESET_ALL}
+{Fore.CYAN}detachview {Fore.WHITE}<view_name> <description>{Style.RESET_ALL}
+{Fore.CYAN}addtoview {Fore.WHITE}<view_name> <schedule_name>{Style.RESET_ALL}
+{Fore.CYAN}PRINTUSER {Fore.WHITE}<username>{Style.RESET_ALL}
+{Fore.CYAN}PRINTSCHEDULE {Fore.WHITE}<username> <schedule_id>{Style.RESET_ALL}
+{Fore.CYAN}PRINTVIEW {Fore.WHITE}<view_name>{Style.RESET_ALL}
+"""
 
-def switch_user():
-    global current_user
-    user_id = input("Enter user ID to switch to: ")
-    for user in users:
-        if user.id == user_id:
-            current_user = user
-            print(f"Switched to user: {current_user.username}")
-            return
-    print("User not found.")
 
-def create_event():
-    if not current_user:
-        print("Please switch to a user first.")
-        return
-    event_type = input("Enter event type: ")
-    start = input("Enter start time: ")
-    end = input("Enter end time: ")
-    period = input("Enter period: ")
-    description = input("Enter description: ")
-    location = input("Enter location: ")
-    protection = input("Enter protection level: ")
-    assignee = input("Enter assignee: ")
-    event = Event(event_type, start, end, period, description, location, protection, assignee)
-    print(f"Event created with ID: {event.id}")
-    return event
+def handle_client(connection, address):
+    try:
+        while True:
+            request = connection.recv(1024).decode()
+            if not request:
+                break
 
-def create_schedule():
-    if not current_user:
-        print("Please switch to a user first.")
-        return
-    description = input("Enter schedule description: ")
-    protection = input("Enter protection level: ")
-    schedule = Schedule(description, protection)
-    schedules.append(schedule)
-    print(f"Schedule created with ID: {schedule.id}")
+            response = process_request(request, threading.get_ident())
+            connection.sendall(response.encode())
+    finally:
+        connection.close()
 
-def add_event_to_schedule():
-    schedule_id = input("Enter the schedule ID to add the event to: ")
-    schedule = next((s for s in schedules if str(s.id) == str(schedule_id)), None)
-    if schedule:
-        event = create_event()
-        if event:
-            schedule.add_event(event)
-            print("Event added to the schedule.")
-    else:
-        print("Schedule not found.")
 
-def list_all_ids():
-    print("User IDs:")
-    for user in users:
-        print(f"- {user.id}")
+def process_request(request, thread_id):
+    parts = shlex.split(request)
+    if len(parts) > 0:
+        command = parts[0]
+        if command == "adduser":
+            return handle_adduser(parts[1:])
+        elif command == "signin":
+            return handle_signin(parts[1:])
 
-    print("\nSchedule IDs:")
-    for schedule in schedules:
-        print(f"- {schedule.id}")
+        username = ScheduleManager().get_user_by_thread_id(thread_id)
+        id = ScheduleManager().get_user_id(username)
 
-def view_user_schedule():
-    if not current_user:
-        print("Please switch to a user first.")
-        return
-    
-    schedule_id = input("Enter the schedule ID to view: ")
-    schedule = next((s for s in schedules if str(s.id) == schedule_id), None)
+        if not ScheduleManager().is_logged_in(username):
+            return "You should authenticate to proceed."
 
-    if schedule:
-        print(f"\nSchedule: {schedule.description}")
-        for event in schedule.events:
-            print(f"- Event ID: {event.id}, Type: {event.event_type}, Description: {event.description}")
-    else:
-        print("Schedule not found.")
+        if command == "addschedule":
+            return handle_addschedule(parts[1:], id)
+        elif command == "deleteschedule":
+            return handle_deleteschedule(parts[1:], id)
+        elif command == "deleteuser":
+            return handle_deleteuser(parts[1:])
+        elif command == "addevent":
+            return handle_addevent(parts[1:], id)
+        elif command == "deleteevent":
+            return handle_deleteevent(parts[1:], id)
+        # UPDATE USER
+        elif command == "changepassword":
+            return handle_changepassword(parts[1:], id)
+        elif command == "updateevent":
+            return handle_updateevent(parts[1:], id)
+        elif command == "createview":
+            return handle_createview(parts[1:], id)
+        elif command == "attachview":
+            return handle_attachview(parts[1:], id)
+        elif command == "detachview":
+            return handle_detachview(parts[1:], id)
+        elif command == "addtoview":
+            return handle_addtoview(parts[1:], id)
 
-def main_menu():
+        elif command == "PRINTUSER":
+            return handle_printuser(id)
+        elif command == "PRINTSCHEDULE":
+            return handle_printschedule(parts[1:], id)
+        elif command == "PRINTVIEW":
+            return handle_printview(parts[1:], id)
+
+    return HELP_TEXT
+
+def start_server(port):
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # added to prevent socket already in use error.
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind(("", port))
+    server_socket.listen()
+    atexit.register(server_socket.close)
+
+    retrieve_objects()
+
+    print(f"Server listening on port {port}")
+
     while True:
-        print("\n--- Schedule Manager ---")
-        print("1. Create User")
-        print("2. Switch User")
-        print("3. Create Event")
-        print("4. Create Schedule")
-        print("5. Add Event to Schedule")
-        print("6. View User's Schedule")
-        print("7. List All IDs")
-        print("8. Exit")
-        choice = input("Enter your choice: ")
+        conn, addr = server_socket.accept()
+        print(f"Connection from {addr}")
 
-        if choice == "1":
-            create_user()
-        elif choice == "2":
-            switch_user()
-        elif choice == "3":
-            create_event()
-        elif choice == "4":
-            create_schedule()
-        elif choice == "5":
-            add_event_to_schedule()
-        elif choice == "6":
-            view_user_schedule()
-        elif choice == "7":
-            list_all_ids()
-        elif choice == "8":
-            print("Exiting the application.")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+        client_thread = threading.Thread(target=handle_client, args=(conn, addr))
+        client_thread.start()
 
 if __name__ == "__main__":
-    main_menu()
+    parser = argparse.ArgumentParser(description="TCP Server Application")
+    parser.add_argument("--port", type=int, required=True, help="TCP port to listen on")
+    args = parser.parse_args()
+
+    start_server(args.port)
