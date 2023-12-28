@@ -9,10 +9,10 @@ import uuid
 import hashlib
 import datetime
 
-
 class ScheduleManager:
     _instance = None
     _session_map = dict()
+    _session_token_map = dict()
     users = []
     schedules = []
     events = []
@@ -124,6 +124,9 @@ class ScheduleManager:
             if self._session_map[thread_id]["username"] == username:
                 return True
         return False
+    
+    def is_token_valid(self, token):
+        pass
 
     # -------------------------
     # Schedule-related Functions
@@ -461,4 +464,4 @@ class ScheduleManager:
             for thread_id in self._session_map:
                 if self._session_map[thread_id]["username"] == username:
                     return thread_id
-
+    

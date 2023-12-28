@@ -31,3 +31,13 @@ class TCPConnectionManager:
         if self.client_socket:
             self.client_socket.close()
             self.client_socket = None
+
+    def is_connected(self):
+        if self.client_socket is None:
+            return False
+
+        try:
+            self.client_socket.getpeername()
+            return True
+        except socket.error:
+            return False

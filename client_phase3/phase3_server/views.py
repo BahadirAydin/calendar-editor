@@ -7,9 +7,10 @@ from django.contrib import messages
 
 tcp_manager = TCPConnectionManager()
 
+
 def connect_view(request):
     tcp_manager.connect('localhost', 1423)
-    if tcp_manager.client_socket:
+    if tcp_manager.is_connected():
         url = reverse('login')
         return redirect(url)
     else:
@@ -22,6 +23,10 @@ def test_view(request):
         return HttpResponse(response, content_type="text/plain")
     else:
         return HttpResponse("sdsdf", content_type="text/plain")
+
+def home_view(request):
+    print("home")
+    return render(request, 'home.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -37,10 +42,23 @@ def login_view(request):
     return render(request, 'login_signup.html')
 
 def signup_view(request):
+    if not tcp_manager.is_connected():
+        url = reverse('login')
+        return redirect(url)
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        print(username, password)
-        # User.objects.create_user(username=username, password=password)
-        return redirect('login')  # Redirect to the login page after signup.
+        fullname = request.POST['fullname']
+        email = request.POST['email']
+        if(len(fullname.split(" "))) > 1:
+            fullname = "'" + fullname + "'"
+        tcp_manager.send("adduser {} {} {} {}".format(username, email, fullname, password))
+        response = tcp_manager.receive()
+        # print(response)
+        if "success" in response:
+            messages.success(request, 'Signup successful. Please log in.')
+        else:
+            messages.error(request, 'Signup failed. Please try again.')
+        return redirect('login')
     return render(request, 'login_signup.html')
