@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from phase3_server.views import connect_view
+from phase3_server.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('connect/', connect_view),
+    path('other/', test_view),
 ]
