@@ -20,6 +20,8 @@ from phase3_server.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('connect/', connect_view),
+    path('', connect_view),
     path('other/', test_view),
+    path('login/', login_view, name='login'),
+    path('signup/', signup_view, name='signup'),
 ]

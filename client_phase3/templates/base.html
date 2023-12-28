@@ -1,11 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
+		<style>
+			* {
+				margin: 0;
+			}
+			.header-container {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				text-align: center;
+				background-color: #191a1d;
+				color: white;
+				padding: 10px 0;
+			}
+
+			.header-container h1,
+			.header-container h3 {
+				margin: 0 10px;
+			}
+			body {
+				font-family: Arial, sans-serif;
+			}
+			.form-container {
+				width: 300px;
+				margin: 100px auto;
+				padding: 20px;
+				border: 1px solid #ccc;
+			}
+			.hidden {
+				display: none;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Welcome</h1>
+		<div class="header-container">
+			<h1>Calendar Editor - Phase 3</h1>
+			<h3>Denizcan Yilmaz</h3>
+			<h3>Bahadir Aydin</h3>
+		</div>
+
+		{% block content %} {% endblock content %}
 	</body>
 </html>
