@@ -43,7 +43,6 @@ def login_view(request):
         response = eval(response)
         if response["status"] == "success":
             request.session["username"] = username
-            messages.success(request, "Login successful.")
             url = reverse("home")
             return redirect(url)
         else:
