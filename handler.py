@@ -1,3 +1,4 @@
+from os import wait
 from user import User
 from schedule_manager import ScheduleManager
 import threading
@@ -25,7 +26,7 @@ def verify_password(password):
 
 
 def handle_adduser(request):
-    response = {}
+    response = {"status": "error", "message": "Missing or too many arguments"}
 
     if len(request) == 4:
         if ScheduleManager().user_exists(request[0]):
@@ -58,7 +59,7 @@ def handle_adduser(request):
 
 
 def handle_deleteuser(request):
-    response = {}
+    response = {"status": "error", "message": "Missing or too many arguments"}
 
     if len(request) == 2:
         username = request[0]
@@ -329,13 +330,52 @@ def handle_printschedule(request, user_id):
                         "schedule_id": event[1],
                         "start_time": event[2],
                         "end_time": event[3],
-                        "priority": event[4],
-                        "name": event[5],
-                        "location": event[6],
-                        "protection": event[7],
-                        "assignee": event[8],
+                        "period": event[4],
+                        "description": event[5],
+                        "event_type": event[6],
+                        "location": event[7],
+                        "protection": event[8],
+                        "assignee": event[9],
                     }
                 )
 
+    return json.dumps(response)
 
+
+def handle_printallschedules(user_id):
+    response = {"status": "error", "message": "Missing or too many arguments"}
+
+    schedules = ScheduleManager().get_all_schedules(user_id)
+    print(schedules)
+    if schedules is None:
+        response["status"] = "error"
+        response["message"] = "Schedule does not exist"
+    else:
+        response["status"] = "success"
+        response["schedules"] = []
+        for schedule in schedules:
+            response["schedules"].append(
+                {
+                    "id": schedule["id"],
+                    "user_id": schedule["user_id"],
+                    "description": schedule["description"],
+                    "protection": schedule["protection"],
+                    "events": [],
+                }
+            )
+            for event in schedule["events"]:
+                response["schedules"][-1]["events"].append(
+                    {
+                        "event_id": event[0],
+                        "schedule_id": event[1],
+                        "start_time": event[2],
+                        "end_time": event[3],
+                        "period": event[4],
+                        "description": event[5],
+                        "event_type": event[6],
+                        "location": event[7],
+                        "protection": event[8],
+                        "assignee": event[9],
+                    }
+                )
     return json.dumps(response)

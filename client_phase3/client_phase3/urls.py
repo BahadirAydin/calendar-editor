@@ -19,10 +19,12 @@ from django.urls import path
 from phase3_server.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', connect_view),
-    path('other/', test_view),
-    path('login/', login_view, name='login'),
-    path('signup/', signup_view, name='signup'),
-    path('home/', home_view, name="home")
+    path("admin/", admin.site.urls),
+    path("", connect_view),
+    path("other/", test_view),
+    path("login/", login_view, name="login"),
+    path("signup/", signup_view, name="signup"),
+    path("home/", home_view, name="home"),
+    path("add_schedule/", add_schedule_view, name="add_schedule"),
+    path("add_event/", add_event_view, name="add_event"),
 ]

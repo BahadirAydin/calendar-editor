@@ -9,6 +9,7 @@ import uuid
 import hashlib
 import datetime
 
+
 class ScheduleManager:
     _instance = None
     _session_map = dict()
@@ -124,7 +125,7 @@ class ScheduleManager:
             if self._session_map[thread_id]["username"] == username:
                 return True
         return False
-    
+
     def is_token_valid(self, token):
         pass
 
@@ -180,7 +181,6 @@ class ScheduleManager:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
             query = f"select * from schedule where id='{schid}'"
-            print(query)
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
@@ -196,6 +196,29 @@ class ScheduleManager:
                 "events": events,
             }
             return data
+
+    def get_all_schedules(self, userid):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from schedule where user_id='{userid}'"
+        row = c.execute(query)
+        v = row.fetchall()
+        if v is None:
+            return None
+        data = []
+        for i in range(len(v)):
+            query = f"select * from event where schedule_id='{v[i][0]}'"
+            row = c.execute(query)
+            events = row.fetchall()
+            d = {
+                "id": v[i][0],
+                "description": v[i][2],
+                "protection": v[i][3],
+                "user_id": v[i][1],
+                "events": events,
+            }
+            data.append(d)
+        return data
 
     def schedule_exists(self, userid, description):
         db = sqlite3.connect("project.sql3")
@@ -458,9 +481,8 @@ class ScheduleManager:
     def get_user_by_thread_id(self, thread_id):
         if thread_id in self._session_map:
             return self._session_map[thread_id].get("username")
-    
+
     def get_thread_id_by_username(self, username):
-            for thread_id in self._session_map:
-                if self._session_map[thread_id]["username"] == username:
-                    return thread_id
-    
+        for thread_id in self._session_map:
+            if self._session_map[thread_id]["username"] == username:
+                return thread_id

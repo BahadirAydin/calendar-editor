@@ -61,6 +61,8 @@ def process_request(request, thread_id):
 
         if command == "addschedule":
             return handle_addschedule(parts[1:], id)
+        elif command == "homeview":
+            return handle_printallschedules(id)
         elif command == "deleteschedule":
             return handle_deleteschedule(parts[1:], id)
         elif command == "deleteuser":
@@ -92,6 +94,7 @@ def process_request(request, thread_id):
 
     return HELP_TEXT
 
+
 def start_server(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # added to prevent socket already in use error.
@@ -110,6 +113,7 @@ def start_server(port):
 
         client_thread = threading.Thread(target=handle_client, args=(conn, addr))
         client_thread.start()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TCP Server Application")

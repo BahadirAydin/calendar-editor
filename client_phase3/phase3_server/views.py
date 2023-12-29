@@ -1,3 +1,4 @@
+from mmap import PROT_WRITE
 from os import wait
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -30,8 +31,12 @@ def test_view(request):
 
 
 def home_view(request):
-    print("home")
-    return render(request, "home.html")
+    tcp_manager.send("homeview")
+    response = tcp_manager.receive()
+    response = eval(response)
+    if response["status"] == "error":
+        return render(request, "home.html", {"schedules": []})
+    return render(request, "home.html", {"schedules": response["schedules"]})
 
 
 def login_view(request):
@@ -51,6 +56,56 @@ def login_view(request):
     return render(request, "login_signup.html")
 
 
+def add_schedule_view(request):
+    if request.method == "POST":
+        description = request.POST["description"]
+        protection = request.POST["protection"]
+        tcp_manager.send("addschedule {} {} ".format(description, protection))
+        response = tcp_manager.receive()
+        response = eval(response)
+        if response["status"] == "success":
+            return redirect("home")
+        else:
+            messages.error(request, f"Failed to add schedule. {response['message']}")
+            return redirect("home")
+    return redirect("home")
+
+
+def add_event_view(request):
+    if request.method == "POST":
+        schedule_name = request.POST["schedule_name"]
+        event_type = request.POST["event_type"]
+        start = request.POST["start_time"]
+        end = request.POST["end_time"]
+        period = request.POST["period"]
+        description = request.POST["description"]
+        location = request.POST["location"]
+        protection = request.POST["protection"]
+        assignee = request.POST["assignee"]
+
+        tcp_manager.send(
+            "addevent {} {} {} {} {} {} {} {} {}".format(
+                schedule_name,
+                event_type,
+                start,
+                end,
+                period,
+                description,
+                location,
+                protection,
+                assignee,
+            )
+        )
+        response = tcp_manager.receive()
+        response = eval(response)
+        if response["status"] == "error":
+            messages.error(request, f"Failed to add event. {response['message']}")
+        else:
+            messages.success(request, "Event added successfully.")
+            return redirect("home")
+    return redirect("home")
+
+
 def signup_view(request):
     if not tcp_manager.is_connected():
         url = reverse("login")
@@ -68,7 +123,6 @@ def signup_view(request):
         )
         response = tcp_manager.receive()
         response = eval(response)
-        print(response)
         if response["status"] == "success":
             messages.success(request, "Signup successful. Please log in.")
         else:
