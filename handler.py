@@ -4,7 +4,8 @@ import threading
 import re
 import json
 from colorama import Fore, Style
-import sqlite3 
+import sqlite3
+
 
 def verify_email(email):
     pat = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
@@ -24,44 +25,64 @@ def verify_password(password):
 
 
 def handle_adduser(request):
+    response = {}
+
     if len(request) == 4:
         if ScheduleManager().user_exists(request[0]):
-            return "User already exists"
-        if not verify_username(request[0]):
-            return "Username must be 4-16 characters long and start with a letter"
-        username = request[0]
-        if not verify_email(request[1]):
-            return "Invalid email address"
-        email = request[1]
-        if not verify_password(request[3]):
-            return "Password must be at least 6 characters long"
-        fullname = request[2]
-        password = request[3]
-        if ScheduleManager().create_user(username, email, fullname, password):
-            return f"User {username} added successfully"
+            response["status"] = "error"
+            response["message"] = "User already exists"
+        elif not verify_username(request[0]):
+            response["status"] = "error"
+            response[
+                "message"
+            ] = "Username must be 4-16 characters long and start with a letter"
+        elif not verify_email(request[1]):
+            response["status"] = "error"
+            response["message"] = "Invalid email address"
+        elif not verify_password(request[3]):
+            response["status"] = "error"
+            response["message"] = "Password must be at least 6 characters long"
         else:
-            return "Database error"
-    else:
-        return "Missing or too much arguments.\n adduser requires <username> <email> <fullname> <password>"
+            username = request[0]
+            email = request[1]
+            fullname = request[2]
+            password = request[3]
+
+            if ScheduleManager().create_user(username, email, fullname, password):
+                response["status"] = "success"
+                response["message"] = f"User {username} added successfully"
+            else:
+                response["status"] = "error"
+                response["message"] = "Database error"
+    return json.dumps(response)
 
 
 def handle_deleteuser(request):
+    response = {}
+
     if len(request) == 2:
         username = request[0]
         password = request[1]
+
         if User.login(username, password):
             if ScheduleManager().delete_user_by_id(
                 ScheduleManager().get_user_id(username)
             ):
-                return f"User {username} deleted successfully"
+                response["status"] = "success"
+                response["message"] = f"User {username} deleted successfully"
             else:
-                return "Database error"
+                response["status"] = "error"
+                response["message"] = "Database error"
         else:
-            return "Invalid username or password"
+            response["status"] = "error"
+            response["message"] = "Invalid username or password"
     else:
-        return (
-            "Missing or too much arguments.\n deleteuser requires <username> <password>"
-        )
+        response["status"] = "error"
+        response[
+            "message"
+        ] = "Missing or too much arguments.\n deleteuser requires <username> <password>"
+
+    return json.dumps(response)
 
 
 def handle_updateevent(request, user_id):
@@ -94,7 +115,10 @@ def handle_updateevent(request, user_id):
             assignee,
         ):
             for event in ScheduleManager().events:
-                if event.schedule_id == schid and event.description == event_description:
+                if (
+                    event.schedule_id == schid
+                    and event.description == event_description
+                ):
                     event.event_type = event_type
                     event.start = start
                     event.end = end
@@ -123,49 +147,72 @@ def handle_updateevent(request, user_id):
 
 
 def handle_changepassword(request, user_id):
+    response = {}
+
     if len(request) == 3:
         username = request[0]
         password = request[1]
         new_password = request[2]
+
         if User.login(username, password):
             if ScheduleManager().update_user(user_id, new_password):
-                return f"User {username} updated successfully"
+                response["status"] = "success"
+                response["message"] = f"User {username} updated successfully"
             else:
-                return "Database error"
+                response["status"] = "error"
+                response["message"] = "Database error"
         else:
-            return "Invalid username or password"
-    else:
-        return "Missing or too much arguments.\n changepassword requires <username> <password> <new_password>"
+            response["status"] = "error"
+            response["message"] = "Invalid username or password"
+
+    return json.dumps(response)
 
 
 def handle_signin(request):
+    response = {"status": "error", "message": "Missing or too many arguments"}
+
     if len(request) == 2:
         username = request[0]
         password = request[1]
+
         if User.login(username, password):
             user = [u for u in ScheduleManager().users if u.username == username][0]
             ScheduleManager().save_session(threading.get_ident(), username, user)
-            return f"User {username} signed in successfully"
+
+            response["status"] = "success"
+            response["message"] = f"User {username} signed in successfully"
         else:
-            return "Invalid username or password"
-    else:
-        return "Missing or too much arguments.\n signin requires <username> <password>"
+            response["status"] = "error"
+            response["message"] = "Invalid username or password"
+
+    return json.dumps(response)
 
 
 def handle_addschedule(request, user_id):
+    response = {}
+
     if len(request) == 2:
         description = request[0]
         protection = request[1]
 
         if ScheduleManager().create_schedule(description, protection, user_id):
-            return "Schedule added successfully"
+            response["status"] = "success"
+            response["message"] = "Schedule added successfully"
         else:
-            return "Database error"
+            response["status"] = "error"
+            response["message"] = "Database error"
     else:
-        return "Missing or too many arguments.\n addschedule requires <username> <description> <protection>"
+        response["status"] = "error"
+        response[
+            "message"
+        ] = "Missing or too many arguments.\n addschedule requires <username> <description> <protection>"
+
+    return json.dumps(response)
 
 
 def handle_addevent(request, userid):
+    response = {}
+
     if len(request) == 9:
         schedule_name = request[0]
         event_type = request[1]
@@ -178,26 +225,29 @@ def handle_addevent(request, userid):
         assignee = request[8]
 
         if not ScheduleManager().schedule_exists(userid, schedule_name):
-            return "Schedule does not exist"
-
-        schid = ScheduleManager().get_schedule_id(userid, schedule_name)
-
-        if ScheduleManager().create_event(
-            schid,
-            event_type,
-            start,
-            end,
-            period,
-            description,
-            location,
-            protection,
-            assignee,
-        ):
-            return "Event added successfully"
+            response["status"] = "error"
+            response["message"] = "Schedule does not exist"
         else:
-            return "Database error"
-    else:
-        return "Missing or too many arguments.\n addevent requires <schedule_name> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>"
+            schid = ScheduleManager().get_schedule_id(userid, schedule_name)
+
+            if ScheduleManager().create_event(
+                schid,
+                event_type,
+                start,
+                end,
+                period,
+                description,
+                location,
+                protection,
+                assignee,
+            ):
+                response["status"] = "success"
+                response["message"] = "Event added successfully"
+            else:
+                response["status"] = "error"
+                response["message"] = "Database error"
+
+    return json.dumps(response)
 
 
 def handle_deleteschedule(request, user_id):
