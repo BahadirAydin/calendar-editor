@@ -186,7 +186,6 @@ class ScheduleManager:
             if v is None:
                 return None
             query = f"select * from event where schedule_id='{schid}'"
-            print(query)
             row = c.execute(query)
             events = row.fetchall()
             data = {
