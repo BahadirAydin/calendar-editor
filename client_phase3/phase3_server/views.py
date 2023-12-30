@@ -84,6 +84,11 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
     return render(request, "login_signup.html")
 
+def logout_view(request):
+    request.session.flush()
+    response = HttpResponseRedirect(reverse('login'))
+    response.delete_cookie('auth_token')
+    return response
 
 def add_schedule_view(request):
     token = request.COOKIES.get('auth_token')

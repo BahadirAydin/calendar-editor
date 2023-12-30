@@ -61,10 +61,26 @@
 			<h1 class="header-title" onclick="window.location='/home'">
 				Calendar Editor - Phase 3
 			</h1>
-			<div style="display: flex; flex-direction: row">
+			<div
+				style="
+					display: flex;
+					flex-direction: row;
+					justify-content: center;
+					align-items: center;
+				"
+			>
 				<h4>Denizcan Yilmaz</h4>
 				<h4>Bahadir Aydin</h4>
 			</div>
+
+			{% if request.session.username %}
+			<button
+				onclick="window.location='/logout'"
+				style="background-color: white; border-radius: 5px; margin-left: 15px"
+			>
+				Logout
+			</button>
+			{% endif %}
 		</div>
 
 		{% block content %} {% endblock content %}
