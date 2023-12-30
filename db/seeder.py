@@ -57,9 +57,9 @@ def main(num_instances):
                        (username, password))
 
         # Insert session data
-        token = str(uuid.uuid4())
-        cursor.execute("INSERT INTO sessions (token, username) VALUES (?, ?)",
-                       (token, username))
+        # token = str(uuid.uuid4())
+        # cursor.execute("INSERT INTO sessions (token, username) VALUES (?, ?)",
+        #                (token, username))
 
         # Generate schedule data
         schedule_id = str(uuid.uuid4())

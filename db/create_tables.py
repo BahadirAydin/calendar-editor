@@ -13,11 +13,12 @@ cursor.execute(
 )
 
 cursor.execute(
-    """CREATE TABLE IF NOT EXISTS sessions (
-                    token TEXT PRIMARY KEY,
-                    username TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )"""
+    '''CREATE TABLE auth_token (
+            token TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            expiration_date TIMESTAMP NOT NULL,
+            FOREIGN KEY (username) REFERENCES user(username)
+        );'''
 )
 
 cursor.execute(

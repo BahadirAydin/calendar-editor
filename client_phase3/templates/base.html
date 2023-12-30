@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html>
 	<head>
-        {% load bootstrap5 %}
-        {% bootstrap_css %}
-        {% bootstrap_javascript %}
+		{% load bootstrap5 %} {% bootstrap_css %} {% bootstrap_javascript %}
 		<style>
 			* {
 				margin: 0;
 			}
 			.header-container {
 				display: flex;
-				justify-content: center;
+				justify-content: space-around;
 				align-items: center;
 				text-align: center;
 				background-color: #191a1d;
 				color: white;
-				padding: 10px 0;
+				padding: 15px 0;
 			}
-			.header-container:hover {
+			.header-title:hover {
 				cursor: pointer;
 			}
 			.header-container h1,
-			.header-container h3 {
+			.header-container h4 {
 				margin: 0 10px;
 			}
 			body {
@@ -36,13 +34,37 @@
 			.hidden {
 				display: none;
 			}
+
+			.success {
+				background-color: green;
+				padding: 5px 2px;
+				font-size: 16px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-radius: 5px;
+			}
+
+			.error {
+				background-color: red;
+				padding: 5px 2px;
+				font-size: 16px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-radius: 5px;
+			}
 		</style>
 	</head>
 	<body>
-		<div class="header-container" onclick="window.location='/home'">
-			<h1>Calendar Editor - Phase 3</h1>
-			<h3>Denizcan Yilmaz</h3>
-			<h3>Bahadir Aydin</h3>
+		<div class="header-container">
+			<h1 class="header-title" onclick="window.location='/home'">
+				Calendar Editor - Phase 3
+			</h1>
+			<div style="display: flex; flex-direction: row">
+				<h4>Denizcan Yilmaz</h4>
+				<h4>Bahadir Aydin</h4>
+			</div>
 		</div>
 
 		{% block content %} {% endblock content %}

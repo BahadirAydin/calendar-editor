@@ -1,132 +1,245 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-3">
+	{% if messages %}
+	<div class="simple_flex">
+		{% for message in messages %}
+		<div class="{{ message.tags }}" style="margin-bottom: 10px">
+			<p style="color: white; font-size: 20px; margin-bottom: 0 !important">
+				{{ message }}
+			</p>
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %} {% if schedules %}
+	<div class="container">
+		<div class="row">
+			{% for schedule in schedules %}
+			<div class="col-md-6">
+				<div class="card mb-4">
+					<div class="card-body">
+						<h2 class="card-title">Schedule Information</h2>
+						<p class="card-text">
+							<strong>Schedule ID:</strong> {{ schedule.id }}
+						</p>
+						<p class="card-text">
+							<strong>Description:</strong> {{ schedule.description }}
+						</p>
+						<p class="card-text">
+							<strong>Protection Level:</strong> {{ schedule.protection }}
+						</p>
+						<p class="card-text">
+							<strong>User ID:</strong> {{ schedule.user_id }}
+						</p>
 
-{% block content %}
-  <div class="container mt-5">
-    <h1 class="display-4 mb-4">Home</h1>
+						{% if schedule.events %}
+						<h3 class="mt-4">Events</h3>
+						<ul class="list-group">
+							{% for event in schedule.events %}
+							<li class="list-group-item">
+								<button
+									class="btn btn-link"
+									type="button"
+									data-toggle="collapse"
+									data-target="#event{{ event.event_id }}"
+									aria-expanded="false"
+									aria-controls="event{{ event.event_id }}"
+								>
+									<strong>Event ID:</strong> {{ event.event_id }}
+								</button>
+								<div class="collapse" id="event{{ event.event_id }}">
+									<p><strong>Schedule ID:</strong> {{ event.schedule_id }}</p>
+									<p><strong>Start Time:</strong> {{ event.start_time }}</p>
+									<p><strong>End Time:</strong> {{ event.end_time }}</p>
+									<p><strong>Event Type:</strong> {{ event.event_type }}</p>
+									<p><strong>Description:</strong> {{ event.description }}</p>
+									<p><strong>Location:</strong> {{ event.location }}</p>
+									<p><strong>Protection:</strong> {{ event.protection }}</p>
+									<p><strong>Assignee:</strong> {{ event.assignee }}</p>
+								</div>
+							</li>
+							{% endfor %}
+						</ul>
+						{% else %}
+						<p>No events available for this schedule.</p>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			{% endfor %} {% else %}
+			<h4>No schedules available</h4>
+			{% endif %}
 
-    {% if schedules %}
-      {% for schedule in schedules %}
-        <div class="card mb-4">
-          <div class="card-body">
-            <h2 class="card-title">Schedule Information</h2>
-            <p class="card-text"><strong>Schedule ID:</strong> {{ schedule.id }}</p>
-            <p class="card-text"><strong>Description:</strong> {{ schedule.description }}</p>
-            <p class="card-text"><strong>Protection Level:</strong> {{ schedule.protection }}</p>
-            <p class="card-text"><strong>User ID:</strong> {{ schedule.user_id }}</p>
+			<hr />
 
-            {% if schedule.events %}
-              <h3 class="mt-4">Events</h3>
-              <ul class="list-group">
-                {% for event in schedule.events %}
-                  <li class="list-group-item">
-                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#event{{ event.event_id }}" aria-expanded="false" aria-controls="event{{ event.event_id }}">
-                      <strong>Event ID:</strong> {{ event.event_id }}
-                    </button>
-                    <div class="collapse" id="event{{ event.event_id }}">
-                      <p><strong>Schedule ID:</strong> {{ event.schedule_id }}</p>
-                      <p><strong>Start Time:</strong> {{ event.start_time }}</p>
-                      <p><strong>End Time:</strong> {{ event.end_time }}</p>
-                      <p><strong>Event Type:</strong> {{ event.event_type }}</p>
-                      <p><strong>Description:</strong> {{ event.description }}</p>
-                      <p><strong>Location:</strong> {{ event.location }}</p>
-                      <p><strong>Protection:</strong> {{ event.protection }}</p>
-                      <p><strong>Assignee:</strong> {{ event.assignee }}</p>
-                    </div>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              <p>No events available for this schedule.</p>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <p>No schedules available.</p>
-    {% endif %}
+			<div
+				class="toggle-buttons mb-3"
+				style="display: flex; align-items: center; justify-content: center"
+			>
+				<button id="showAddSchedule" class="btn btn-secondary">
+					Add Schedule
+				</button>
+				<button id="showAddEvent" class="btn btn-secondary">Add Event</button>
+			</div>
 
-    <hr>
+			<div class="card mb-4 add-schedule-card opt-card">
+				<div class="card-body">
+					<h2 class="card-title">Add Schedule</h2>
+					<form method="post" action="{% url 'add_schedule' %}">
+						{% csrf_token %}
+						<div class="form-group">
+							<label for="description">Description:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="description"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="protection">Protection Level:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="protection"
+								required
+							/>
+						</div>
+						<button type="submit" class="btn btn-primary">Add Schedule</button>
+					</form>
+				</div>
+			</div>
 
-    <div class="card mb-4">
-      <div class="card-body">
-        <h2 class="card-title">Add Schedule</h2>
-        <form method="post" action="{% url 'add_schedule' %}">
-          {% csrf_token %}
-          <div class="form-group">
-            <label for="description">Description:</label>
-            <input type="text" class="form-control" name="description" required>
-          </div>
-          <div class="form-group">
-            <label for="protection">Protection Level:</label>
-            <input type="text" class="form-control" name="protection" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Add Schedule</button>
-        </form>
-      </div>
-    </div>
+			<div class="card add-event-card opt-card">
+				<div class="card-body">
+					<h2 class="card-title">Add Event</h2>
+					<form method="post" action="{% url 'add_event' %}">
+						{% csrf_token %}
+						<div class="form-group">
+							<label for="schedule_name">Schedule Name:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="schedule_name"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="event_type">Event Type:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="event_type"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="start_time">Start Time:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="start_time"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="end_time">End Time:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="end_time"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="period">Period:</label>
+							<input type="text" class="form-control" name="period" required />
+						</div>
+						<div class="form-group">
+							<label for="description">Description:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="description"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="location">Location:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="location"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="protection">Protection Level:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="protection"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="assignee">Assignee:</label>
+							<input
+								type="text"
+								class="form-control"
+								name="assignee"
+								required
+							/>
+						</div>
+						<button type="submit" class="btn btn-primary">Add Event</button>
+					</form>
+				</div>
+			</div>
+		</div>
 
-    <hr>
+		<style>
+			.toggle-buttons > * {
+				margin-left: 2px;
+				margin-right: 2px;
+			}
 
-    <div class="card">
-      <div class="card-body">
-        <h2 class="card-title">Add Event</h2>
-        <form method="post" action="{% url 'add_event' %}">
-          {% csrf_token %}
-          <div class="form-group">
-            <label for="schedule_name">Schedule Name:</label>
-            <input type="text" class="form-control" name="schedule_name" required>
-          </div>
-          <div class="form-group">
-            <label for="event_type">Event Type:</label>
-            <input type="text" class="form-control" name="event_type" required>
-          </div>
-          <div class="form-group">
-            <label for="start_time">Start Time:</label>
-            <input type="text" class="form-control" name="start_time" required>
-          </div>
-          <div class="form-group">
-            <label for="end_time">End Time:</label>
-            <input type="text" class="form-control" name="end_time" required>
-          </div>
-          <div class="form-group">
-            <label for="period">Period:</label>
-            <input type="text" class="form-control" name="period" required>
-          </div>
-          <div class="form-group">
-            <label for="description">Description:</label>
-            <input type="text" class="form-control" name="description" required>
-          </div>
-          <div class="form-group">
-            <label for="location">Location:</label>
-            <input type="text" class="form-control" name="location" required>
-          </div>
-          <div class="form-group">
-            <label for="protection">Protection Level:</label>
-            <input type="text" class="form-control" name="protection" required>
-          </div>
-          <div class="form-group">
-            <label for="assignee">Assignee:</label>
-            <input type="text" class="form-control" name="assignee" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Add Event</button>
-        </form>
-      </div>
-    </div>
-  </div>
+			.form-group {
+				margin-top: 2px;
+				margin-bottom: 4px;
+			}
+			.opt-card {
+				width: 60%;
+				margin: auto;
+				display: none;
+			}
+		</style>
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				const buttons = document.querySelectorAll('[data-toggle="collapse"]');
+				buttons.forEach((button) => {
+					button.addEventListener("click", function () {
+						const targetId = this.getAttribute("data-target").substring(1);
+						const target = document.getElementById(targetId);
+						target.classList.toggle("show");
+					});
+				});
 
-  <script>
-    // Add this script to enable toggling events without navigating
-    document.addEventListener('DOMContentLoaded', function () {
-      const buttons = document.querySelectorAll('[data-toggle="collapse"]');
-      buttons.forEach((button) => {
-        button.addEventListener('click', function () {
-          const targetId = this.getAttribute('data-target').substring(1);
-          const target = document.getElementById(targetId);
-          target.classList.toggle('show');
-        });
-      });
-    });
-  </script>
+				const showAddScheduleBtn = document.getElementById("showAddSchedule");
+				const showAddEventBtn = document.getElementById("showAddEvent");
+				const addScheduleCard = document.querySelector(".add-schedule-card");
+				const addEventCard = document.querySelector(".add-event-card");
 
-{% endblock content %}
+				showAddScheduleBtn.addEventListener("click", function () {
+					addScheduleCard.style.display = "block";
+					addEventCard.style.display = "none";
+				});
 
+				showAddEventBtn.addEventListener("click", function () {
+					addEventCard.style.display = "block";
+					addScheduleCard.style.display = "none";
+				});
+			});
+		</script>
+
+		{% endblock content %}
+	</div>
+</div>

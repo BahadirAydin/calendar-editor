@@ -25,7 +25,7 @@ class TCPConnectionManager:
 
     def receive(self):
         if self.client_socket:
-            return self.client_socket.recv(4096).decode()
+            return self.client_socket.recv(8192).decode()
 
     def close(self):
         if self.client_socket:

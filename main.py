@@ -8,6 +8,7 @@ import atexit
 import shlex
 from retrieve_objects import retrieve_objects
 from colorama import Fore, Style
+from token_manager import TokenManager
 
 schedule_manager = ScheduleManager()
 
@@ -38,59 +39,63 @@ def handle_client(connection, address):
             if not request:
                 break
 
-            response = process_request(request, threading.get_ident())
+            response = process_request(request)
             connection.sendall(response.encode())
     finally:
         connection.close()
 
 
-def process_request(request, thread_id):
+def process_request(request):
     parts = shlex.split(request)
     if len(parts) > 0:
         command = parts[0]
         if command == "adduser":
             return handle_adduser(parts[1:])
         elif command == "signin":
+            print(parts)
             return handle_signin(parts[1:])
+        
+        uname = TokenManager().verify_token(command)
+        if uname is None:
+            return json.dumps({"status": "error", "message" : "Not a valid authentication token. Please sign in again."})
+        
+        id = ScheduleManager().get_user_id(uname)
 
-        username = ScheduleManager().get_user_by_thread_id(thread_id)
-        id = ScheduleManager().get_user_id(username)
-
-        if not ScheduleManager().is_logged_in(username):
-            return "You should authenticate to proceed."
+        command = parts[1]
 
         if command == "addschedule":
-            return handle_addschedule(parts[1:], id)
+            return handle_addschedule(parts[2:], id)
         elif command == "homeview":
+            print("HOMEVIEW")
             return handle_printallschedules(id)
         elif command == "deleteschedule":
-            return handle_deleteschedule(parts[1:], id)
+            return handle_deleteschedule(parts[2:], id)
         elif command == "deleteuser":
-            return handle_deleteuser(parts[1:])
+            return handle_deleteuser(parts[2:])
         elif command == "addevent":
-            return handle_addevent(parts[1:], id)
+            return handle_addevent(parts[2:], id)
         elif command == "deleteevent":
-            return handle_deleteevent(parts[1:], id)
+            return handle_deleteevent(parts[2:], id)
         # UPDATE USER
         elif command == "changepassword":
-            return handle_changepassword(parts[1:], id)
+            return handle_changepassword(parts[2:], id)
         elif command == "updateevent":
-            return handle_updateevent(parts[1:], id)
+            return handle_updateevent(parts[2:], id)
         elif command == "createview":
-            return handle_createview(parts[1:], id)
+            return handle_createview(parts[2:], id)
         elif command == "attachview":
-            return handle_attachview(parts[1:], id)
+            return handle_attachview(parts[2:], id)
         elif command == "detachview":
-            return handle_detachview(parts[1:], id)
+            return handle_detachview(parts[2:], id)
         elif command == "addtoview":
-            return handle_addtoview(parts[1:], id)
+            return handle_addtoview(parts[2:], id)
 
         elif command == "PRINTUSER":
             return handle_printuser(id)
         elif command == "PRINTSCHEDULE":
-            return handle_printschedule(parts[1:], id)
+            return handle_printschedule(parts[2:], id)
         elif command == "PRINTVIEW":
-            return handle_printview(parts[1:], id)
+            return handle_printview(parts[2:], id)
 
     return HELP_TEXT
 

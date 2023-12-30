@@ -1,6 +1,4 @@
-from mmap import PROT_WRITE
-from os import wait
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from .tcp_connection_manager import TCPConnectionManager
 from django.urls import reverse
@@ -31,80 +29,16 @@ def test_view(request):
 
 
 def home_view(request):
-    tcp_manager.send("homeview")
+    token = request.COOKIES.get('auth_token')
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    tcp_manager.send("{} homeview".format(token))
     response = tcp_manager.receive()
     response = eval(response)
     if response["status"] == "error":
         return render(request, "home.html", {"schedules": []})
     return render(request, "home.html", {"schedules": response["schedules"]})
-
-
-def login_view(request):
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        tcp_manager.send("signin {} {}".format(username, password))
-        response = tcp_manager.receive()
-        response = eval(response)
-        if response["status"] == "success":
-            request.session["username"] = username
-            url = reverse("home")
-            return redirect(url)
-        else:
-            messages.error(request, "Invalid username or password.")
-
-    return render(request, "login_signup.html")
-
-
-def add_schedule_view(request):
-    if request.method == "POST":
-        description = request.POST["description"]
-        protection = request.POST["protection"]
-        tcp_manager.send("addschedule {} {} ".format(description, protection))
-        response = tcp_manager.receive()
-        response = eval(response)
-        if response["status"] == "success":
-            return redirect("home")
-        else:
-            messages.error(request, f"Failed to add schedule. {response['message']}")
-            return redirect("home")
-    return redirect("home")
-
-
-def add_event_view(request):
-    if request.method == "POST":
-        schedule_name = request.POST["schedule_name"]
-        event_type = request.POST["event_type"]
-        start = request.POST["start_time"]
-        end = request.POST["end_time"]
-        period = request.POST["period"]
-        description = request.POST["description"]
-        location = request.POST["location"]
-        protection = request.POST["protection"]
-        assignee = request.POST["assignee"]
-
-        tcp_manager.send(
-            "addevent {} {} {} {} {} {} {} {} {}".format(
-                schedule_name,
-                event_type,
-                start,
-                end,
-                period,
-                description,
-                location,
-                protection,
-                assignee,
-            )
-        )
-        response = tcp_manager.receive()
-        response = eval(response)
-        if response["status"] == "error":
-            messages.error(request, f"Failed to add event. {response['message']}")
-        else:
-            messages.success(request, "Event added successfully.")
-            return redirect("home")
-    return redirect("home")
-
 
 def signup_view(request):
     if not tcp_manager.is_connected():
@@ -129,3 +63,86 @@ def signup_view(request):
             messages.error(request, "Signup failed. Please try again.")
         return redirect("login")
     return render(request, "login_signup.html")
+
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        tcp_manager.send("signin {} {}".format(username, password))
+        response = tcp_manager.receive()
+        print(response)
+        response = eval(response)
+        if response["status"] == "success":
+            request.session["username"] = username
+            token = response["token"] 
+            expiration = response["expiration"]
+            messages.success(request, "Welcome {}!".format(username))
+            redirect_response = HttpResponseRedirect(reverse("home"))
+            redirect_response.set_cookie('auth_token', token, max_age=expiration, httponly=True)
+            return redirect_response
+        else:
+            messages.error(request, "Invalid username or password.")
+    return render(request, "login_signup.html")
+
+
+def add_schedule_view(request):
+    token = request.COOKIES.get('auth_token')
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        description = request.POST["description"]
+        protection = request.POST["protection"]
+        tcp_manager.send("{} addschedule {} {} ".format(token, description, protection))
+        response = tcp_manager.receive()
+        response = eval(response)
+        if response["status"] == "success":
+            return redirect("home")
+        else:
+            messages.error(request, f"Failed to add schedule. {response['message']}")
+            return redirect("home")
+    return redirect("home")
+
+
+def add_event_view(request):
+    token = request.COOKIES.get('auth_token')
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+
+    if request.method == "POST":
+        schedule_name = request.POST["schedule_name"]
+        event_type = request.POST["event_type"]
+        start = request.POST["start_time"]
+        end = request.POST["end_time"]
+        period = request.POST["period"]
+        description = request.POST["description"]
+        location = request.POST["location"]
+        protection = request.POST["protection"]
+        assignee = request.POST["assignee"]
+
+        tcp_manager.send(
+            "{} addevent {} {} {} {} {} {} {} {} {}".format(
+                token,
+                schedule_name,
+                event_type,
+                start,
+                end,
+                period,
+                description,
+                location,
+                protection,
+                assignee,
+            )
+        )
+        response = tcp_manager.receive()
+        response = eval(response)
+        if response["status"] == "error":
+            messages.error(request, f"Failed to add event. {response['message']}")
+        else:
+            messages.success(request, "Event added successfully.")
+            return redirect("home")
+    return redirect("home")
+
+

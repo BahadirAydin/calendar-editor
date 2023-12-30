@@ -6,7 +6,7 @@ import re
 import json
 from colorama import Fore, Style
 import sqlite3
-
+from token_manager import TokenManager
 
 def verify_email(email):
     pat = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
@@ -171,20 +171,25 @@ def handle_changepassword(request, user_id):
 
 def handle_signin(request):
     response = {"status": "error", "message": "Missing or too many arguments"}
-
+    print("req: ", request)
     if len(request) == 2:
         username = request[0]
         password = request[1]
-
+        print(username, password)
         if User.login(username, password):
-            user = [u for u in ScheduleManager().users if u.username == username][0]
-            ScheduleManager().save_session(threading.get_ident(), username, user)
-
+            # This authentication mechanism was used in Phase2
+            # user = [u for u in ScheduleManager().users if u.username == username][0]
+            # ScheduleManager().save_session(threading.get_ident(), username, user)
+            dur_hours = 2
+            token = TokenManager().generate_token(username=username, duration_hours=dur_hours)
             response["status"] = "success"
             response["message"] = f"User {username} signed in successfully"
+            response["token"] = token
+            response["expiration"] = dur_hours * 60 * 60
         else:
             response["status"] = "error"
             response["message"] = "Invalid username or password"
+            response["token"] = None
 
     return json.dumps(response)
 
