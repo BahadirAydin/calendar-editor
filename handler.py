@@ -171,11 +171,9 @@ def handle_changepassword(request, user_id):
 
 def handle_signin(request):
     response = {"status": "error", "message": "Missing or too many arguments"}
-    print("req: ", request)
     if len(request) == 2:
         username = request[0]
         password = request[1]
-        print(username, password)
         if User.login(username, password):
             # This authentication mechanism was used in Phase2
             # user = [u for u in ScheduleManager().users if u.username == username][0]
@@ -220,7 +218,6 @@ def handle_addevent(request, userid):
     response = {}
 
     if len(request) == 9:
-        print("LEN CHECK")
         schedule_name = request[0]
         event_type = request[1]
         start = request[2]
@@ -352,7 +349,6 @@ def handle_printallschedules(user_id):
     response = {"status": "error", "message": "Missing or too many arguments"}
 
     schedules = ScheduleManager().get_all_schedules(user_id)
-    print(schedules)
     if schedules is None:
         response["status"] = "error"
         response["message"] = "Schedule does not exist"

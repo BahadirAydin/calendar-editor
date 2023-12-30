@@ -30,8 +30,6 @@ class User:
     def login(uname, passwd):
         with sqlite3.connect("project.sql3") as db:
             c = db.cursor()
-            print(uname)
-            print(passwd)
             query = f"select username,password from auth where username='{uname}'"
             row = c.execute(query)
         user = row.fetchone()

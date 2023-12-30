@@ -34,7 +34,6 @@ def home_view(request):
         return redirect("login")
     tcp_manager.send("{} schedules".format(token))
     response = tcp_manager.receive()
-    print(response)
     response = eval(response)
     action_result = request.session.get('action_result')
     action_request = request.session.get('action_request')
@@ -161,8 +160,6 @@ def add_event_view(request):
             )
         )
         response = tcp_manager.receive()
-        print("here")
-        print(response)
         response = eval(response)
         if response["status"] == "error":
             messages.error(request, f"Failed to add event. {response['message']}")

@@ -169,7 +169,6 @@ class ScheduleManager:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
             query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
-            print(query)
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
@@ -224,7 +223,6 @@ class ScheduleManager:
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
         query = f"select * from schedule where user_id='{userid}' AND description='{description}'"
-        print(query)
         row = c.execute(query)
         if row.fetchone():
             return True
@@ -390,7 +388,6 @@ class ScheduleManager:
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
                 query = f"update users_and_views set is_attached=1 where user_id='{user_id}' AND view_id='{view_id}'"
-                print(query)
                 c.execute(query)
                 db.commit()
                 return True
@@ -415,7 +412,6 @@ class ScheduleManager:
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
         query = f"select * from users_and_views where user_id='{user_id}' AND view_id='{view_id}' AND is_attached=1"
-        print("CHECK", query)
         row = c.execute(query)
         if row.fetchone():
             return True
@@ -474,7 +470,6 @@ class ScheduleManager:
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
         query = f"select * from event where schedule_id='{schid}' AND description='{description}' AND start_time='{start}' AND end_time='{end}'"
-        print(query)
         row = c.execute(query)
         if row.fetchone():
             return True

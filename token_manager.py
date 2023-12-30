@@ -18,10 +18,8 @@ class TokenManager:
         return conn
 
     def generate_token(self, username, duration_hours=1):
-        print(username)
         token = secrets.token_hex(16)
         expiration_date = datetime.datetime.now() + datetime.timedelta(hours=duration_hours)
-        print(username)
         conn = self.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("INSERT INTO auth_token (token, username, expiration_date) VALUES (?, ?, ?)",
