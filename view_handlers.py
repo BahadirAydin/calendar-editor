@@ -24,6 +24,7 @@ def handle_attachview(request, user_id):
         if ScheduleManager().is_user_attached(user_id):
             response["status"] = "error"
             response["message"] = "User is already attached to a view"
+            return json.dumps(response)
 
         view_id = ScheduleManager().get_view_id_by_description(description)
         if view_id is None:
@@ -154,7 +155,7 @@ def handle_printallviews(user_id):
     else:
         response["status"] = "success"
         response["views"] = []
-
+        del response["message"]
         for view in views:
             response["views"].append(
                 {
