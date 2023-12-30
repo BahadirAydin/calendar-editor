@@ -8,6 +8,7 @@ from colorama import Fore, Style
 import sqlite3
 from token_manager import TokenManager
 
+
 def verify_email(email):
     pat = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
     return re.match(pat, email)
@@ -181,7 +182,9 @@ def handle_signin(request):
             # user = [u for u in ScheduleManager().users if u.username == username][0]
             # ScheduleManager().save_session(threading.get_ident(), username, user)
             dur_hours = 2
-            token = TokenManager().generate_token(username=username, duration_hours=dur_hours)
+            token = TokenManager().generate_token(
+                username=username, duration_hours=dur_hours
+            )
             response["status"] = "success"
             response["message"] = f"User {username} signed in successfully"
             response["token"] = token
@@ -189,7 +192,7 @@ def handle_signin(request):
         else:
             response["status"] = "error"
             response["message"] = "Invalid username or password"
-            response["token"] = None
+            response["token"] = "none"
 
     return json.dumps(response)
 

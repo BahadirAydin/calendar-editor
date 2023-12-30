@@ -65,9 +65,11 @@ def process_request(request):
 
         if command == "addschedule":
             return handle_addschedule(parts[2:], id)
-        elif command == "homeview":
+        elif command == "schedules":
             print("HOMEVIEW")
             return handle_printallschedules(id)
+        elif command == "views":
+            return handle_printallviews(id)
         elif command == "deleteschedule":
             return handle_deleteschedule(parts[2:], id)
         elif command == "deleteuser":

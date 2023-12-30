@@ -292,6 +292,54 @@ class ScheduleManager:
         row = c.execute(query)
         return row.fetchall()
 
+    def get_all_views(self, user_id):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from users_and_views where user_id='{user_id}'"
+        row = c.execute(query)
+        v = row.fetchall()
+        if not v:
+            return None
+
+        data = []
+        for i in range(len(v)):
+            view_id = v[i][1]
+            description = v[i][2]
+            is_attached = v[i][3]
+
+            query_schedules = f"select schedule_id from views_and_schedules where view_id='{view_id}'"
+            row_schedules = c.execute(query_schedules)
+            schedule_ids = row_schedules.fetchall()
+
+            schedules = []
+            for schedule_id in schedule_ids:
+                query_schedule = f"select * from schedule where id='{schedule_id[0]}'"
+                row_schedule = c.execute(query_schedule)
+                v2 = row_schedule.fetchone()
+
+                query_events = f"select * from event where schedule_id='{schedule_id[0]}'"
+                row_events = c.execute(query_events)
+                events = row_events.fetchall()
+
+                schedule_data = {
+                    "id": v2[0],
+                    "description": v2[2],
+                    "protection": v2[3],
+                    "user_id": v2[1],
+                    "events": events,
+                }
+                schedules.append(schedule_data)
+
+            view_data = {
+                "view_id": view_id,
+                "description": description,
+                "is_attached": is_attached,
+                "schedules": schedules,
+            }
+            data.append(view_data)
+
+        return data
+
     def view_exists(self, view_id):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()

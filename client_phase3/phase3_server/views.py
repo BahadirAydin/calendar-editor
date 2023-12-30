@@ -29,16 +29,113 @@ def test_view(request):
 
 
 def home_view(request):
-    token = request.COOKIES.get('auth_token')
+    token = request.COOKIES.get("auth_token")
     if not token:
         messages.error(request, "Authentication required.")
         return redirect("login")
-    tcp_manager.send("{} homeview".format(token))
+    return render(request, "home.html")
+
+
+def schedules_view(request):
+    token = request.COOKIES.get("auth_token")
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    tcp_manager.send("{} schedules".format(token))
     response = tcp_manager.receive()
     response = eval(response)
     if response["status"] == "error":
-        return render(request, "home.html", {"schedules": []})
-    return render(request, "home.html", {"schedules": response["schedules"]})
+        return render(request, "schedules.html", {"schedules": []})
+    return render(request, "schedules.html", {"schedules": response["schedules"]})
+
+
+def views_view(request):
+    token = request.COOKIES.get("auth_token")
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    tcp_manager.send("{} views".format(token))
+    response = tcp_manager.receive()
+    response = eval(response)
+    print(response)
+    if response["status"] == "error":
+        messages.error(request, f"Failed to get views. {response['message']}")
+        return render(request, "views.html", {"views": []})
+    return render(request, "views.html", {"views": response["views"]})
+
+
+def create_view(request):
+    token = request.COOKIES.get("auth_token")
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    if request.method == "POST":
+        description = request.POST["description"]
+        tcp_manager.send("{} createview {}".format(token, description))
+        response = tcp_manager.receive()
+        print(response)
+        response = eval(response)
+        if response["status"] == "error":
+            messages.error(request, f"Failed to create view. {response['message']}")
+        return redirect("views")
+
+    return render(request, "views.html")
+
+
+def add_to_view(request):
+    token = request.COOKIES.get("auth_token")
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    if request.method == "POST":
+        view_description = request.POST["view_description"]
+        schedule_description = request.POST["schedule_description"]
+        tcp_manager.send(
+            "{} addtoview {} {}".format(token, view_description, schedule_description)
+        )
+        response = tcp_manager.receive()
+        print(response)
+        response = eval(response)
+        if response["status"] == "error":
+            messages.error(request, f"Failed to add to view. {response['message']}")
+        return redirect("views")
+
+    return render(request, "views.html")
+
+
+def attach_view(request):
+    token = request.COOKIES.get("auth_token")
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    if request.method == "POST":
+        print(request.POST)
+        description = request.POST["view_description"]
+        tcp_manager.send("{} attachview {}".format(token, description))
+        response = tcp_manager.receive()
+        print(response)
+        response = eval(response)
+        if response["status"] == "error":
+            messages.error(request, f"Failed to attach view. {response['message']}")
+        return redirect("views")
+    return render(request, "views.html")
+
+
+def detach_view(request):
+    token = request.COOKIES.get("auth_token")
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    if request.method == "POST":
+        description = request.POST["view_description"]
+        tcp_manager.send("{} detachview {}".format(token, description))
+        response = tcp_manager.receive()
+        response = eval(response)
+        if response["status"] == "error":
+            messages.error(request, f"Failed to detach view. {response['message']}")
+        return redirect("views")
+    return render(request, "views.html")
+
 
 def signup_view(request):
     if not tcp_manager.is_connected():
@@ -64,6 +161,7 @@ def signup_view(request):
         return redirect("login")
     return render(request, "login_signup.html")
 
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -74,28 +172,32 @@ def login_view(request):
         response = eval(response)
         if response["status"] == "success":
             request.session["username"] = username
-            token = response["token"] 
+            token = response["token"]
             expiration = response["expiration"]
             messages.success(request, "Welcome {}!".format(username))
             redirect_response = HttpResponseRedirect(reverse("home"))
-            redirect_response.set_cookie('auth_token', token, max_age=expiration, httponly=True)
+            redirect_response.set_cookie(
+                "auth_token", token, max_age=expiration, httponly=True
+            )
             return redirect_response
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, "login_signup.html")
 
+
 def logout_view(request):
     request.session.flush()
-    response = HttpResponseRedirect(reverse('login'))
-    response.delete_cookie('auth_token')
+    response = HttpResponseRedirect(reverse("login"))
+    response.delete_cookie("auth_token")
     return response
 
+
 def add_schedule_view(request):
-    token = request.COOKIES.get('auth_token')
+    token = request.COOKIES.get("auth_token")
     if not token:
         messages.error(request, "Authentication required.")
         return redirect("login")
-    
+
     if request.method == "POST":
         description = request.POST["description"]
         protection = request.POST["protection"]
@@ -111,7 +213,7 @@ def add_schedule_view(request):
 
 
 def add_event_view(request):
-    token = request.COOKIES.get('auth_token')
+    token = request.COOKIES.get("auth_token")
     if not token:
         messages.error(request, "Authentication required.")
         return redirect("login")
@@ -149,5 +251,3 @@ def add_event_view(request):
             messages.success(request, "Event added successfully.")
             return redirect("home")
     return redirect("home")
-
-

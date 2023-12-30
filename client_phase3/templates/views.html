@@ -1,0 +1,154 @@
+{% extends 'base.html' %} 
+{% block content %}
+<div class="container mt-3">
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Home</a>
+    {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+            {% for message in messages %}
+                <div class="{{ message.tags }}">
+                    <p class="text-white mb-0">{{ message }}</p>
+                </div>
+            {% endfor %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    {% if views %}
+        <div class="container">
+            <div class="row">
+                {% for view in views %}
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <!-- View Information... -->
+
+                                <h2 class="card-title">View Information</h2>
+                                <p class="card-text"><strong>View ID:</strong> {{ view.id }}</p>
+                                <p class="card-text"><strong>Description:</strong> {{ view.description }}</p>
+                                <p class="card-text"><strong>Attached:</strong> {{ view.attached }}</p>
+
+                                <!-- Check if there are schedules -->
+                                {% if view.schedules %}
+                                    <!-- Iterate through schedules -->
+                                    {% for schedule in view.schedules %}
+                                        <h3 class="mb-3" data-bs-target="#schedule{{ schedule.id }}">Schedule</h3>
+                                        <div id="schedule{{ schedule.id }}" >
+                                            <p><strong>Description:</strong> {{ schedule.description }}</p>
+                                            <p><strong>Protection:</strong> {{ schedule.protection }}</p>
+
+                                            <!-- Check if there are events in the schedule -->
+                                            {% if schedule.events %}
+                                                <!-- Iterate through events in the schedule -->
+                                                {% for event in schedule.events %}
+                                                    <h4 class="mb-2" data-bs-target="#event{{ event.id }}">Event</h4>
+                                                    <div id="event{{ event.id }}">
+                                                        <p><strong>Start:</strong> {{ event.2 }}</p>
+                                                        <p><strong>End:</strong> {{ event.3 }}</p>
+                                                        <p><strong>Period:</strong> {{ event.4 }}</p>
+                                                        <p><strong>Description:</strong> {{ event.5 }}</p>
+                                                        <p><strong>Event Type:</strong> {{ event.6 }}</p>
+                                                        <p><strong>Location:</strong> {{ event.7 }}</p>
+                                                        <p><strong>Protection:</strong> {{ event.8 }}</p>
+                                                        <p><strong>Assignee:</strong> {{ event.9 }}</p>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p>No events in this schedule.</p>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>No schedules in this view.</p>
+                                {% endif %}
+
+                                <form action="{% url 'attach_view' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="view_description" value="{{ view.description }}">
+                                    <button type="submit" class="btn btn-success">Attach View</button>
+                                </form>
+
+                                <!-- Detach View Button -->
+                                <form action="{% url 'detach_view' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="view_description" value="{{ view.description }}">
+                                    <button type="submit" class="btn btn-danger">Detach View</button>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <h4>No views available</h4>
+    {% endif %}
+</div>
+
+<!-- Toggle Buttons -->
+<div class="toggle-buttons mb-3" style="display: flex; align-items: center; justify-content: center">
+    <button id="showCreateView" class="btn btn-primary">
+        Add View
+    </button>
+</div>
+
+<!-- Create View Form -->
+<div class="collapse" id="createViewForm">
+    <form method="post" action="{% url 'create_view' %}" id="create-view-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <input type="text" class="form-control" name="description" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Create View</button>
+    </form>
+</div>
+
+<form action="{% url 'add_to_view' %}" method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="view_description" class="form-label">View Description:</label>
+        <input type="text" class="form-control" name="view_description" required>
+    </div>
+    <div class="mb-3">
+        <label for="schedule_description" class="form-label">Schedule Description:</label>
+        <input type="text" class="form-control" name="schedule_description" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add to View</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const buttons = document.querySelectorAll('[data-bs-toggle="collapse"]');
+        buttons.forEach((button) => {
+            button.addEventListener("click", function () {
+                const targetId = this.getAttribute("data-bs-target").substring(1);
+                const target = document.getElementById(targetId);
+                const isShowing = target.classList.contains("show");
+
+                // Close all collapsibles
+                buttons.forEach((otherButton) => {
+                    const otherTargetId = otherButton.getAttribute("data-bs-target").substring(1);
+                    const otherTarget = document.getElementById(otherTargetId);
+                    otherTarget.classList.remove("show");
+                });
+
+                // Open or close the clicked collapsible
+                if (!isShowing) {
+                    target.classList.add("show");
+                }
+            });
+        });
+
+        const showCreateView = document.getElementById("showCreateView");
+        const createViewForm = document.getElementById("createViewForm");
+
+        showCreateView.addEventListener("click", function () {
+            createViewForm.classList.toggle("show");
+        });
+    });
+</script>
+
+
+{% endblock content %}
+
