@@ -9,7 +9,7 @@
 			.header-container {
 				display: flex;
 				justify-content: space-around;
-				align-items: center;
+				align-items: baseline;
 				text-align: center;
 				background-color: #191a1d;
 				color: white;
@@ -54,29 +54,54 @@
 				align-items: center;
 				border-radius: 5px;
 			}
+			.logout-btn:hover {
+				transform: scale(1.1);
+			}
 		</style>
 	</head>
 	<body>
 		<div class="header-container">
-			<h1 class="header-title" onclick="window.location='/home'">
-				Calendar Editor - Phase 3
-			</h1>
 			<div
 				style="
 					display: flex;
 					flex-direction: row;
 					justify-content: center;
-					align-items: center;
+					align-items: baseline;
 				"
 			>
-				<h4>Denizcan Yilmaz</h4>
-				<h4>Bahadir Aydin</h4>
-			</div>
+				<h1
+					class="header-title"
+					style="margin-right: 40px"
+					onclick="window.location='/home'"
+				>
+					Calendar Editor
+				</h1>
+				{% if request.session.username %}
 
+				<h4 style="margin: 0; margin-right: 20px">
+					<a href="{% url 'home' %}" style="text-decoration: none; color: white"
+						>Home</a
+					>
+				</h4>
+				<h4 style="margin: 0; margin-right: 10px" ;>
+					<a
+						href="{% url 'user_views' %}"
+						style="text-decoration: none; color: white"
+						>Views</a
+					>
+				</h4>
+				{% endif %}
+			</div>
 			{% if request.session.username %}
 			<button
+				class="logout-btn"
 				onclick="window.location='/logout'"
-				style="background-color: white; border-radius: 5px; margin-left: 15px"
+				style="
+					background-color: white;
+					padding: 5px;
+					border-radius: 5px;
+					margin-left: 15px;
+				"
 			>
 				Logout
 			</button>

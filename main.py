@@ -62,12 +62,13 @@ def process_request(request):
         id = ScheduleManager().get_user_id(uname)
 
         command = parts[1]
-
+        print(parts[2:])
         if command == "addschedule":
             return handle_addschedule(parts[2:], id)
-        elif command == "homeview":
-            print("HOMEVIEW")
+        elif command == "schedules":
             return handle_printallschedules(id)
+        elif command == "views":
+            return handle_printallviews(id)
         elif command == "deleteschedule":
             return handle_deleteschedule(parts[2:], id)
         elif command == "deleteuser":

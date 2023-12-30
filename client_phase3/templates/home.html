@@ -79,6 +79,9 @@
 					Add Schedule
 				</button>
 				<button id="showAddEvent" class="btn btn-secondary">Add Event</button>
+				<button id="showOtherAction" class="btn btn-secondary">
+					Other Actions
+				</button>
 			</div>
 
 			<div class="card mb-4 add-schedule-card opt-card">
@@ -194,6 +197,32 @@
 					</form>
 				</div>
 			</div>
+
+			<div class="card mb-4 other-action-card opt-card">
+				<div class="card-body">
+					<h2 class="card-title">Other Actions</h2>
+					<form method="post" action="{% url 'other_action' %}">
+						{% csrf_token %}
+						<div class="form-group">
+							<label for="action">Action:</label>
+							<input type="text" class="form-control" name="action" required />
+						</div>
+						<button type="submit" class="btn btn-primary">
+							Execute Action
+						</button>
+					</form>
+				</div>
+			</div>
+
+			{% if action_result %}
+			<div class="alert alert-info">
+				<strong>Request:</strong>
+				<pre>{{ action_request }}</pre>
+
+				<strong>Response:</strong>
+				<pre>{{ action_result }}</pre>
+			</div>
+			{% endif %}
 		</div>
 
 		<style>
@@ -225,17 +254,27 @@
 
 				const showAddScheduleBtn = document.getElementById("showAddSchedule");
 				const showAddEventBtn = document.getElementById("showAddEvent");
+				const showOtherActionBtn = document.getElementById("showOtherAction");
 				const addScheduleCard = document.querySelector(".add-schedule-card");
 				const addEventCard = document.querySelector(".add-event-card");
+				const otherActionCard = document.querySelector(".other-action-card");
 
 				showAddScheduleBtn.addEventListener("click", function () {
 					addScheduleCard.style.display = "block";
 					addEventCard.style.display = "none";
+					otherActionCard.style.display = "none";
 				});
 
 				showAddEventBtn.addEventListener("click", function () {
 					addEventCard.style.display = "block";
 					addScheduleCard.style.display = "none";
+					otherActionCard.style.display = "none";
+				});
+
+				showOtherActionBtn.addEventListener("click", function () {
+					addEventCard.style.display = "none";
+					addScheduleCard.style.display = "none";
+					otherActionCard.style.display = "block";
 				});
 			});
 		</script>

@@ -7,7 +7,6 @@ from django.contrib import messages
 
 tcp_manager = TCPConnectionManager()
 
-
 def connect_view(request):
     tcp_manager.connect("localhost", 1423)
     if tcp_manager.is_connected():
@@ -33,17 +32,33 @@ def home_view(request):
     if not token:
         messages.error(request, "Authentication required.")
         return redirect("login")
-    tcp_manager.send("{} homeview".format(token))
+    tcp_manager.send("{} schedules".format(token))
     response = tcp_manager.receive()
+    print(response)
     response = eval(response)
+    action_result = request.session.get('action_result')
+    action_request = request.session.get('action_request')
+
     if response["status"] == "error":
-        return render(request, "home.html", {"schedules": []})
-    return render(request, "home.html", {"schedules": response["schedules"]})
+        context = {"schedules": [], 'action_result': action_result,'action_request': action_request}
+    else:
+        context = {"schedules": response["schedules"], 'action_result': action_result, 'action_request': action_request}
+    if 'action_result' in request.session:
+        del request.session['action_result']
+    if 'action_request' in request.session:
+        del request.session['action_request']
+
+    return render(request, "home.html", context)    
 
 def signup_view(request):
     if not tcp_manager.is_connected():
         url = reverse("login")
         return redirect(url)
+    
+    token = request.COOKIES.get('auth_token')
+    if token:
+        messages.success(request, "Your session has not expired yet.")
+        return redirect("home")
 
     if request.method == "POST":
         username = request.POST["username"]
@@ -65,12 +80,16 @@ def signup_view(request):
     return render(request, "login_signup.html")
 
 def login_view(request):
+    token = request.COOKIES.get('auth_token')
+    if token:
+        messages.success(request, "Your session has not expired yet.")
+        return redirect("home")
+
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
         tcp_manager.send("signin {} {}".format(username, password))
         response = tcp_manager.receive()
-        print(response)
         response = eval(response)
         if response["status"] == "success":
             request.session["username"] = username
@@ -142,6 +161,8 @@ def add_event_view(request):
             )
         )
         response = tcp_manager.receive()
+        print("here")
+        print(response)
         response = eval(response)
         if response["status"] == "error":
             messages.error(request, f"Failed to add event. {response['message']}")
@@ -150,4 +171,19 @@ def add_event_view(request):
             return redirect("home")
     return redirect("home")
 
+def other_action_view(request):
+    token = request.COOKIES.get('auth_token')
+    if not token:
+        messages.error(request, "Authentication required.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        action = request.POST["action"]
+        tcp_manager.send("{} {} ".format(token, action))
+        response = tcp_manager.receive()
+        request.session['action_result'] = response
+        request.session['action_request'] = action
+        return redirect("home")
 
+def user_views(request):
+    return render(request, "user_views.html")    

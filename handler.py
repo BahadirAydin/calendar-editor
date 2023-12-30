@@ -220,6 +220,7 @@ def handle_addevent(request, userid):
     response = {}
 
     if len(request) == 9:
+        print("LEN CHECK")
         schedule_name = request[0]
         event_type = request[1]
         start = request[2]

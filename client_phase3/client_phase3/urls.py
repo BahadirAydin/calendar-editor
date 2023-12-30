@@ -28,4 +28,7 @@ urlpatterns = [
     path("add_schedule/", add_schedule_view, name="add_schedule"),
     path("add_event/", add_event_view, name="add_event"),
     path('logout/', logout_view, name='logout'),
+    path('other_action/', other_action_view, name='other_action'),
+    path('user_views/', user_views, name='user_views')
+
 ]
