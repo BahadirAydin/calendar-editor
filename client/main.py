@@ -1,17 +1,14 @@
-from client import TCPClient
+from client import WebSocketClient
 import argparse
 from colorama import Fore, Style, init
+import asyncio
 
 # Initialize colorama
 init(autoreset=True)
 
-
-def main(port_no):
-    host = "localhost"
-    port = port_no
-
-    client = TCPClient(host, port)
-    client.connect()
+async def main(uri):
+    client = WebSocketClient(uri)
+    await client.connect()
 
     try:
         while True:
@@ -19,14 +16,15 @@ def main(port_no):
             if message.lower() == "exit":
                 break
 
-            response = client.send_request(message)
+            response = await client.send_request(message)
             print(f"{Fore.GREEN}Response: {Style.RESET_ALL}{response}")
     finally:
-        client.close()
+        await client.close()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="TCP Server Application")
-    parser.add_argument("--port", type=int, required=True, help="TCP port to listen on")
+    parser = argparse.ArgumentParser(description="WebSocket Client Application")
+    parser.add_argument("--port", type=int, required=True, help="WebSocket port to connect to")
     args = parser.parse_args()
-    main(args.port)
+    uri = f"ws://localhost:{args.port}"
+    asyncio.get_event_loop().run_until_complete(main(uri))

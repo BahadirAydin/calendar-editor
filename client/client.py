@@ -1,25 +1,23 @@
-import socket
+import asyncio
+import websockets
 
-class TCPClient:
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
-        self.socket = None
-        self.token = None
+class WebSocketClient:
+    def __init__(self, uri):
+        self.uri = uri
+        self.connection = None
 
-    def connect(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.host, self.port))
+    async def connect(self):
+        self.connection = await websockets.connect(self.uri)
 
-    def send_request(self, message):
-        if not self.socket:
+    async def send_request(self, message):
+        if not self.connection:
             raise Exception("Connection not established. Call connect() first.")
-        
-        self.socket.sendall(message.encode())
-        response = self.socket.recv(1024)
-        return response.decode()
 
-    def close(self):
-        if self.socket:
-            self.socket.close()
-            self.socket = None
+        await self.connection.send(message)
+        response = await self.connection.recv()
+        return response
+
+    async def close(self):
+        if self.connection:
+            await self.connection.close()
+            self.connection = None
