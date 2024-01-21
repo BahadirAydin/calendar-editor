@@ -13,6 +13,7 @@ import datetime
 class ScheduleManager:
     _instance = None
     _session_map = dict()
+    _session_token_map = dict()
     users = []
     schedules = []
     events = []
@@ -125,6 +126,9 @@ class ScheduleManager:
                 return True
         return False
 
+    def is_token_valid(self, token):
+        pass
+
     # -------------------------
     # Schedule-related Functions
     # -------------------------
@@ -165,7 +169,6 @@ class ScheduleManager:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
             query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
-            print(query)
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
@@ -177,13 +180,11 @@ class ScheduleManager:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
             query = f"select * from schedule where id='{schid}'"
-            print(query)
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
                 return None
             query = f"select * from event where schedule_id='{schid}'"
-            print(query)
             row = c.execute(query)
             events = row.fetchall()
             data = {
@@ -195,11 +196,33 @@ class ScheduleManager:
             }
             return data
 
+    def get_all_schedules(self, userid):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from schedule where user_id='{userid}'"
+        row = c.execute(query)
+        v = row.fetchall()
+        if v is None:
+            return None
+        data = []
+        for i in range(len(v)):
+            query = f"select * from event where schedule_id='{v[i][0]}'"
+            row = c.execute(query)
+            events = row.fetchall()
+            d = {
+                "id": v[i][0],
+                "description": v[i][2],
+                "protection": v[i][3],
+                "user_id": v[i][1],
+                "events": events,
+            }
+            data.append(d)
+        return data
+
     def schedule_exists(self, userid, description):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
         query = f"select * from schedule where user_id='{userid}' AND description='{description}'"
-        print(query)
         row = c.execute(query)
         if row.fetchone():
             return True
@@ -267,6 +290,54 @@ class ScheduleManager:
         row = c.execute(query)
         return row.fetchall()
 
+    def get_all_views(self, user_id):
+        db = sqlite3.connect("project.sql3")
+        c = db.cursor()
+        query = f"select * from users_and_views where user_id='{user_id}'"
+        row = c.execute(query)
+        v = row.fetchall()
+        if not v:
+            return None
+
+        data = []
+        for i in range(len(v)):
+            view_id = v[i][1]
+            description = v[i][2]
+            is_attached = v[i][3]
+
+            query_schedules = f"select schedule_id from views_and_schedules where view_id='{view_id}'"
+            row_schedules = c.execute(query_schedules)
+            schedule_ids = row_schedules.fetchall()
+
+            schedules = []
+            for schedule_id in schedule_ids:
+                query_schedule = f"select * from schedule where id='{schedule_id[0]}'"
+                row_schedule = c.execute(query_schedule)
+                v2 = row_schedule.fetchone()
+
+                query_events = f"select * from event where schedule_id='{schedule_id[0]}'"
+                row_events = c.execute(query_events)
+                events = row_events.fetchall()
+
+                schedule_data = {
+                    "id": v2[0],
+                    "description": v2[2],
+                    "protection": v2[3],
+                    "user_id": v2[1],
+                    "events": events,
+                }
+                schedules.append(schedule_data)
+
+            view_data = {
+                "view_id": view_id,
+                "description": description,
+                "is_attached": is_attached,
+                "schedules": schedules,
+            }
+            data.append(view_data)
+
+        return data
+
     def view_exists(self, view_id):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
@@ -317,7 +388,6 @@ class ScheduleManager:
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
                 query = f"update users_and_views set is_attached=1 where user_id='{user_id}' AND view_id='{view_id}'"
-                print(query)
                 c.execute(query)
                 db.commit()
                 return True
@@ -342,7 +412,6 @@ class ScheduleManager:
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
         query = f"select * from users_and_views where user_id='{user_id}' AND view_id='{view_id}' AND is_attached=1"
-        print("CHECK", query)
         row = c.execute(query)
         if row.fetchone():
             return True
@@ -401,7 +470,6 @@ class ScheduleManager:
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
         query = f"select * from event where schedule_id='{schid}' AND description='{description}' AND start_time='{start}' AND end_time='{end}'"
-        print(query)
         row = c.execute(query)
         if row.fetchone():
             return True
@@ -456,9 +524,8 @@ class ScheduleManager:
     def get_user_by_thread_id(self, thread_id):
         if thread_id in self._session_map:
             return self._session_map[thread_id].get("username")
-    
-    def get_thread_id_by_username(self, username):
-            for thread_id in self._session_map:
-                if self._session_map[thread_id]["username"] == username:
-                    return thread_id
 
+    def get_thread_id_by_username(self, username):
+        for thread_id in self._session_map:
+            if self._session_map[thread_id]["username"] == username:
+                return thread_id

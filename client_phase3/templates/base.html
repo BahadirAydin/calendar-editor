@@ -1,11 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
+		{% load bootstrap5 %} {% bootstrap_css %} {% bootstrap_javascript %}
+		<style>
+			* {
+				margin: 0;
+			}
+			.header-container {
+				display: flex;
+				justify-content: space-around;
+				align-items: baseline;
+				text-align: center;
+				background-color: #191a1d;
+				color: white;
+				padding: 15px 0;
+			}
+			.header-title:hover {
+				cursor: pointer;
+			}
+			.header-container h1,
+			.header-container h4 {
+				margin: 0 10px;
+			}
+			body {
+				font-family: Arial, sans-serif;
+			}
+			.form-container {
+				width: 300px;
+				margin: 100px auto;
+				padding: 20px;
+				border: 1px solid #ccc;
+			}
+			.hidden {
+				display: none;
+			}
+
+			.success {
+				background-color: green;
+				padding: 5px 2px;
+				font-size: 16px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-radius: 5px;
+			}
+
+			.error {
+				background-color: red;
+				padding: 5px 2px;
+				font-size: 16px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-radius: 5px;
+			}
+			.logout-btn:hover {
+				transform: scale(1.1);
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Welcome</h1>
+		<div class="header-container">
+			<div
+				style="
+					display: flex;
+					flex-direction: row;
+					justify-content: center;
+					align-items: baseline;
+				"
+			>
+				<h1
+					class="header-title"
+					style="margin-right: 40px"
+					onclick="window.location='/home'"
+				>
+					Calendar Editor
+				</h1>
+				{% if request.session.username %}
+
+				<h4 style="margin: 0; margin-right: 20px">
+					<a href="{% url 'home' %}" style="text-decoration: none; color: white"
+						>Home</a
+					>
+				</h4>
+				<h4 style="margin: 0; margin-right: 10px" ;>
+					<a
+						href="{% url 'user_views' %}"
+						style="text-decoration: none; color: white"
+						>Views</a
+					>
+				</h4>
+				{% endif %}
+			</div>
+			{% if request.session.username %}
+			<button
+				class="logout-btn"
+				onclick="window.location='/logout'"
+				style="
+					background-color: white;
+					padding: 5px;
+					border-radius: 5px;
+					margin-left: 15px;
+				"
+			>
+				Logout
+			</button>
+			{% endif %}
+		</div>
+
+		{% block content %} {% endblock content %}
 	</body>
 </html>
