@@ -1,8 +1,8 @@
 import argparse
-import asyncio
-import websockets
 import shlex
 import json
+from websockets.sync import server
+from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
 from schedule_manager import ScheduleManager
 from handler import *
 from view_handlers import *
@@ -12,23 +12,23 @@ from colorama import Fore, Style
 
 schedule_manager = ScheduleManager()
 
-HELP_TEXT = f"""{Fore.GREEN}Valid commands are:{Style.RESET_ALL}
-{Fore.CYAN}adduser {Fore.WHITE}<username> <email> <fullname> <password>{Style.RESET_ALL}
-{Fore.CYAN}deleteuser {Fore.WHITE}<username> <password>{Style.RESET_ALL}
-{Fore.CYAN}signin {Fore.WHITE}<username> <password>{Style.RESET_ALL}
-{Fore.CYAN}addschedule {Fore.WHITE}<username> <description> <protection>{Style.RESET_ALL}
-{Fore.CYAN}deleteschedule {Fore.WHITE}<username> <schedule_id>{Style.RESET_ALL}
-{Fore.CYAN}addevent {Fore.WHITE}<username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>{Style.RESET_ALL}
-{Fore.CYAN}deleteevent {Fore.WHITE}<username> <schedule_id> <event_id>{Style.RESET_ALL}
-{Fore.CYAN}changepassword {Fore.WHITE}<username> <password> <new_password>{Style.RESET_ALL}
-{Fore.CYAN}updateevent {Fore.WHITE}<username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>{Style.RESET_ALL}
-{Fore.CYAN}createview {Fore.WHITE}<description>{Style.RESET_ALL}
-{Fore.CYAN}attachview {Fore.WHITE}<view_name> <description>{Style.RESET_ALL}
-{Fore.CYAN}detachview {Fore.WHITE}<view_name> <description>{Style.RESET_ALL}
-{Fore.CYAN}addtoview {Fore.WHITE}<view_name> <schedule_name>{Style.RESET_ALL}
-{Fore.CYAN}PRINTUSER {Fore.WHITE}<username>{Style.RESET_ALL}
-{Fore.CYAN}PRINTSCHEDULE {Fore.WHITE}<username> <schedule_id>{Style.RESET_ALL}
-{Fore.CYAN}PRINTVIEW {Fore.WHITE}<view_name>{Style.RESET_ALL}
+HELP_TEXT = f"""Valid commands are:
+    adduser <username> <email> <fullname> <password>
+    deleteuser <username> <password>
+    signin <username> <password>
+    addschedule <username> <description> <protection>
+    deleteschedule <username> <schedule_id>
+    addevent <username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>
+    deleteevent <username> <schedule_id> <event_id>
+    changepassword <username> <password> <new_password>
+    updateevent <username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>
+    createview <description>
+    attachview <view_name> <description>
+    detachview <view_name> <description>
+    addtoview <view_name> <schedule_name>
+    PRINTUSER <username>
+    PRINTSCHEDULE <username> <schedule_id>
+    PRINTVIEW <view_name>
 """
 
 async def handle_client(websocket, path):
@@ -48,73 +48,82 @@ async def handle_client(websocket, path):
         print(f"Connection with {address} closed unexpectedly.")
     except Exception as e:
         print(f"Unexpected error with {address}: {e}")
-
+        
 def process_request(request):
+    parts = shlex.split(request)
+    if len(parts) > 0:
+        command = parts[0]
+        if command == "adduser":
+            return handle_adduser(parts[1:])
+        elif command == "signin":
+            print(parts)
+            return handle_signin(parts[1:])
+        
+        uname = TokenManager().verify_token(command)
+        if uname is None:
+            return json.dumps({"status": "error", "message" : "Not a valid authentication token. Please sign in again."})
+        
+        id = ScheduleManager().get_user_id(uname)
+
+        command = parts[1]
+        print(parts[2:])
+        if command == "addschedule":
+            return handle_addschedule(parts[2:], id)
+        elif command == "schedules":
+            return handle_printallschedules(id)
+        elif command == "views":
+            return handle_printallviews(id)
+        elif command == "deleteschedule":
+            return handle_deleteschedule(parts[2:], id)
+        elif command == "deleteuser":
+            return handle_deleteuser(parts[2:])
+        elif command == "addevent":
+            return handle_addevent(parts[2:], id)
+        elif command == "deleteevent":
+            return handle_deleteevent(parts[2:], id)
+        # UPDATE USER
+        elif command == "changepassword":
+            return handle_changepassword(parts[2:], id)
+        elif command == "updateevent":
+            return handle_updateevent(parts[2:], id)
+        elif command == "createview":
+            return handle_createview(parts[2:], id)
+        elif command == "attachview":
+            return handle_attachview(parts[2:], id)
+        elif command == "detachview":
+            return handle_detachview(parts[2:], id)
+        elif command == "addtoview":
+            return handle_addtoview(parts[2:], id)
+
+        elif command == "PRINTUSER":
+            return handle_printuser(id)
+        elif command == "PRINTSCHEDULE":
+            return handle_printschedule(parts[2:], id)
+        elif command == "PRINTVIEW":
+            return handle_printview(parts[2:], id)
+    return json.dumps({"response": HELP_TEXT})
+
+
+def agent(sock):
     try:
-        parts = shlex.split(request)    
-        if len(parts) > 0:
-            command = parts[0]
-            if command == "adduser":
-                return handle_adduser(parts[1:])
-            elif command == "signin":
-                print(parts)
-                return handle_signin(parts[1:])
-            
-            uname = TokenManager().verify_token(command)
-            if uname is None:
-                return json.dumps({"status": "error", "message" : "Not a valid authentication token. Please sign in again."})
-            
-            id = ScheduleManager().get_user_id(uname)
+        while True:
+            inp = sock.recv()
+            response = process_request(inp)
+            sock.send(response)
+    except ConnectionClosedOK:
+        print('Client is terminating')
+    except ConnectionClosedError:
+        print('Client generated error')
 
-            command = parts[1]
-            print(parts[2:])
-            if command == "addschedule":
-                return handle_addschedule(parts[2:], id)
-            elif command == "schedules":
-                return handle_printallschedules(id)
-            elif command == "views":
-                return handle_printallviews(id)
-            elif command == "deleteschedule":
-                return handle_deleteschedule(parts[2:], id)
-            elif command == "deleteuser":
-                return handle_deleteuser(parts[2:])
-            elif command == "addevent":
-                return handle_addevent(parts[2:], id)
-            elif command == "deleteevent":
-                return handle_deleteevent(parts[2:], id)
-            # UPDATE USER
-            elif command == "changepassword":
-                return handle_changepassword(parts[2:], id)
-            elif command == "updateevent":
-                return handle_updateevent(parts[2:], id)
-            elif command == "createview":
-                return handle_createview(parts[2:], id)
-            elif command == "attachview":
-                return handle_attachview(parts[2:], id)
-            elif command == "detachview":
-                return handle_detachview(parts[2:], id)
-            elif command == "addtoview":
-                return handle_addtoview(parts[2:], id)
-
-            elif command == "PRINTUSER":
-                return handle_printuser(id)
-            elif command == "PRINTSCHEDULE":
-                return handle_printschedule(parts[2:], id)
-            elif command == "PRINTVIEW":
-                return handle_printview(parts[2:], id)
-
-        return HELP_TEXT
-    except Exception as e:
-        return json.dumps({"status": "error", "message": f"Error processing command: {str(e)}"})
-
-async def start_server(port):
-    server = await websockets.serve(handle_client, "", port)
+def start_server(host, port):
     retrieve_objects()
-    print(f"Server listening on port {port}")
-    await server.wait_closed()
+    print(f"Server listening on host {host}, port {port}")
+    srv = server.serve(agent, host=host, port=port)
+    srv.serve_forever()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="WebSocket Server Application")
+    parser.add_argument("--host", type=str, default="", help="WebSocket host to listen on")
     parser.add_argument("--port", type=int, required=True, help="WebSocket port to listen on")
     args = parser.parse_args()
-    asyncio.get_event_loop().run_until_complete(start_server(args.port))
+    start_server(args.host, args.port)
