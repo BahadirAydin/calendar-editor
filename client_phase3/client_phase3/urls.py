@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 from phase3_server.views import *
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -13,4 +15,4 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('other_action/', other_action_view, name='other_action'),
     path('user_views/', user_views, name='user_views')
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
