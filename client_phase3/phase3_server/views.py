@@ -2,7 +2,6 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
-import asyncio
 import websockets
 import json
 from asgiref.sync import sync_to_async

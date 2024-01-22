@@ -30,26 +30,9 @@ HELP_TEXT = f"""Valid commands are:
     PRINTSCHEDULE <username> <schedule_id>
     PRINTVIEW <view_name>
 """
-
-async def handle_client(websocket, path):
-    address = websocket.remote_address
-    print(f"Connection from {address}")
-
-    try:
-        async for message in websocket:
-            try:
-                response = process_request(message)
-            except Exception as e:
-                response = json.dumps({"status": "error", "message": f"An error occurred: {str(e)}"})
-                print(f"Error processing request from {address}: {e}")
-
-            await websocket.send(response)
-    except websockets.exceptions.ConnectionClosedError:
-        print(f"Connection with {address} closed unexpectedly.")
-    except Exception as e:
-        print(f"Unexpected error with {address}: {e}")
+connected_clients = []
         
-def process_request(request):
+def process_request(request, sock):
     parts = shlex.split(request)
     if len(parts) > 0:
         command = parts[0]
@@ -58,13 +41,11 @@ def process_request(request):
         elif command == "signin":
             print(parts)
             return handle_signin(parts[1:])
-        
         uname = TokenManager().verify_token(command)
         if uname is None:
             return json.dumps({"status": "error", "message" : "Not a valid authentication token. Please sign in again."})
         
         id = ScheduleManager().get_user_id(uname)
-
         command = parts[1]
         print(parts[2:])
         if command == "addschedule":
@@ -78,14 +59,30 @@ def process_request(request):
         elif command == "deleteuser":
             return handle_deleteuser(parts[2:])
         elif command == "addevent":
-            return handle_addevent(parts[2:], id)
+            response = handle_addevent(parts[2:], id)
+            schid = ScheduleManager().get_schedule_id(id, parts[2])
+            print("schedule id: ", schid)
+            message = json.dumps({"type": "NEW", "id" : schid, "command": "REFRESH" })
+            broadcast_message(message, sock)
+            return response        
         elif command == "deleteevent":
-            return handle_deleteevent(parts[2:], id)
+            response = handle_deleteevent(parts[2:], id)
+            schid = ScheduleManager().get_schedule_id(id, parts[2])
+            print("schedule id delete: ", schid)
+            message = json.dumps({"type": "DELETE", "id" : schid, "command": "REFRESH" })
+            broadcast_message(message, sock)
+            return response 
+               
         # UPDATE USER
         elif command == "changepassword":
             return handle_changepassword(parts[2:], id)
         elif command == "updateevent":
-            return handle_updateevent(parts[2:], id)
+            response = handle_updateevent(parts[2:], id)
+            schid = ScheduleManager().get_schedule_id(id, parts[2])
+            print("schedule id update: ", schid)
+            message = json.dumps({"type": "UPDATE", "id" : schid, "command": "REFRESH" })
+            broadcast_message(message, sock)
+            return response 
         elif command == "createview":
             return handle_createview(parts[2:], id)
         elif command == "attachview":
@@ -103,17 +100,27 @@ def process_request(request):
             return handle_printview(parts[2:], id)
     return json.dumps({"response": HELP_TEXT})
 
+def broadcast_message(message, sock):
+    for client in connected_clients:
+        if client != sock:
+            try:
+                client.send(message)
+            except Exception as e:
+                print(f"Error sending message to a client: {e}")
 
 def agent(sock):
+    connected_clients.append(sock)
     try:
         while True:
             inp = sock.recv()
-            response = process_request(inp)
+            response = process_request(inp, sock)
             sock.send(response)
     except ConnectionClosedOK:
         print('Client is terminating')
     except ConnectionClosedError:
         print('Client generated error')
+    finally:
+        connected_clients.remove(sock)
 
 def start_server(host, port):
     retrieve_objects()
