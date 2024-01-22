@@ -295,7 +295,7 @@
 			print(message);
 			var data = JSON.parse(message);
 
-			if (data.type === "UPDATE" && isRelevantId(data.id)) {
+			if (data.command === "REFRESH" && isRelevantId(data.id)) {
 				alert("There are some changes on this view");
 				window.location.reload();
 			}
