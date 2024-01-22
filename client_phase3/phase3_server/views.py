@@ -2,7 +2,6 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
-import asyncio
 import websockets
 import json
 from asgiref.sync import sync_to_async
@@ -62,6 +61,7 @@ async def home_view(request):
 
     context = {
         "schedule_names": [schedule["description"] for schedule in schedules],
+        "schedule_ids" : [schedule["id"] for schedule in schedules],
         "events": events,
         "action_result": action_result,
         "action_request": action_request,

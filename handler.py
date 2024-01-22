@@ -247,6 +247,7 @@ def handle_addevent(request, userid):
             ):
                 response["status"] = "success"
                 response["message"] = "Event added successfully"
+                response["id"] = schid
             else:
                 response["status"] = "error"
                 response["message"] = "Database error"
