@@ -202,21 +202,35 @@ class ScheduleManager:
         query = f"select * from schedule where user_id='{userid}'"
         row = c.execute(query)
         v = row.fetchall()
-        if v is None:
-            return None
         data = []
-        for i in range(len(v)):
-            query = f"select * from event where schedule_id='{v[i][0]}'"
-            row = c.execute(query)
-            events = row.fetchall()
-            d = {
-                "id": v[i][0],
-                "description": v[i][2],
-                "protection": v[i][3],
-                "user_id": v[i][1],
-                "events": events,
-            }
-            data.append(d)
+        if v is not None:
+            for i in range(len(v)):
+                query = f"select * from event where schedule_id='{v[i][0]}'"
+                row = c.execute(query)
+                events = row.fetchall()
+                d = {
+                    "id": v[i][0],
+                    "description": v[i][2],
+                    "protection": v[i][3],
+                    "user_id": v[i][1],
+                    "events": events,
+                }
+                data.append(d)
+        query2 = f"select * from schedule where protection='PUBLIC'"
+        row2 = c.execute(query2)
+        v2 = row2.fetchall()
+        if v2 is not None:
+            for i in range(len(v2)):
+                query = f"select * from event where schedule_id='{v2[i][0]} AND protection='PUBLIC'"
+                events = row.fetchall()
+                d = {
+                    "id": v2[i][0],
+                    "description": v2[i][2],
+                    "protection": v2[i][3],
+                    "user_id": v2[i][1],
+                    "events": events,
+                }
+                data.append(d)
         return data
 
     def schedule_exists(self, userid, description):
