@@ -500,12 +500,12 @@ class ScheduleManager:
                 print(e)
                 return False
 
-    def delete_event(self, event_id):
+    def delete_event(self,schedule_id, event_description):
         with self.mutex:
             try:
                 db = sqlite3.connect("project.sql3")
                 c = db.cursor()
-                query = f"delete from event where id='{event_id}'"
+                query = f"delete from event where description='{event_description}' AND schedule_id='{schedule_id}'"
                 c.execute(query)
                 db.commit()
             except Exception as e:

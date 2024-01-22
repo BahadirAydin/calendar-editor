@@ -271,20 +271,25 @@ def handle_deleteschedule(request, user_id):
 
 
 def handle_deleteevent(request, user_id):
+    response = {}
     if len(request) == 2:
         schedule_name = request[0]
         event_description = request[1]
 
         if not ScheduleManager().schedule_exists(user_id, schedule_name):
-            return "Schedule does not exist"
+            response["status"] = "error"
+            response["message"] = "Schedule does not exist"
 
         schedule_id = ScheduleManager().get_schedule_id(user_id, schedule_name)
         if ScheduleManager().delete_event(schedule_id, event_description):
-            return "Event deleted successfully"
+            response["status"] = "success"
+            response["message"] = "Event deleted successfully"
         else:
-            return "Database error"
+            response["status"] = "error"
+            response["message"] = "Database error"
     else:
-        return "Missing or too many arguments.\n deleteevent requires <schedule_name> <event_description>"
+        response["status"] = "error"
+    return json.dumps(response)
 
 
 #### PRINT
