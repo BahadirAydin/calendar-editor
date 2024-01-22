@@ -62,6 +62,7 @@ async def home_view(request):
 
     context = {
         "schedule_names": [schedule["description"] for schedule in schedules],
+        "schedule_ids" : [schedule["id"] for schedule in schedules],
         "events": events,
         "action_result": action_result,
         "action_request": action_request,
