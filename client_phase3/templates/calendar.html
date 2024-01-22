@@ -1,33 +1,24 @@
-{% extends 'base.html' %} 
-{% block content %}
-<div>
-  <head>
-    <meta charset='utf-8' />
-    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js'></script>
-        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Function to initialize the calendar with events
-        function initializeCalendar(events) {
-          var calendarEl = document.getElementById('calendar');
-          var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek',
-            slotDuration: '00:30:00', 
-            snapDuration: '00:15:00', 
-            events: events
-          });
-          calendar.render();
-        }
-        var events = document.getElementById('calendar').getAttribute('data-events');
-        events = eval(events);
-        initializeCalendar(events);
-      });
-    </script>
-  </head>
-  <body>
-    <div id='calendar' data-events='{{ events }}'></div>
-  </body>
-</div>
+{% extends 'base.html' %} {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		function initializeCalendar(events) {
+			var calendarEl = document.getElementById("calendar");
+			var calendar = new FullCalendar.Calendar(calendarEl, {
+				initialView: "timeGridWeek",
+				slotDuration: "00:30:00",
+				snapDuration: "00:15:00",
+				events: events,
+			});
+			calendar.render();
+		}
+		var events = document
+			.getElementById("calendar")
+			.getAttribute("data-events");
+		events = eval(events);
+		initializeCalendar(events);
+	});
+</script>
+<div id="calendar" data-events="{{ events }}"></div>
 {% endblock content %}
-
-
