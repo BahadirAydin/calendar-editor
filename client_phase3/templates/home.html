@@ -49,10 +49,12 @@
 	<div style="width: 70%" id="calendar" data-events="{{ events }}"></div>
 </div>
 <div class="container mt-3">
-	{% if page == "views" and not events %}
+	{% if page == "views" and not events and view_name is None %}
 	<h1 style="text-align: center">
 		No view is currently attached or the view is empty.
 	</h1>
+	{% endif %} {% if page == "views" and not events and view_name is not None %}
+	<h1 style="text-align: center">Your current view is {{view_name}}</h1>
 	{% endif %}
 
 	<div

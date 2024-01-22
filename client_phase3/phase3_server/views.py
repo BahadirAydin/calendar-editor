@@ -112,6 +112,8 @@ async def user_views(request):
 
     schedule_ids = [schedule['id'] for schedule in attached_view['schedules']] if attached_view else []
 
+    view_description = attached_view['description'] if attached_view is not None else None
+
     context = {
         "schedule_names": [schedule["description"] for schedule in schedules],
         "schedule_ids": schedule_ids,
@@ -120,7 +122,7 @@ async def user_views(request):
         "action_request": action_request,
         "authorized": request.session.get("username", None),
         "page": "views",
-        "view_name": response.get("description", None)
+        "view_name": view_description
     }
 
     return await async_wrapper(render, request, "home.html", context)
