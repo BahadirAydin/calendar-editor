@@ -82,7 +82,7 @@
 				>
 					Calendar Editor
 				</h1>
-				{% if request.session.username %}
+				{% if authorized %}
 
 				<h4 style="margin: 0; margin-right: 20px">
 					<a href="{% url 'home' %}" style="text-decoration: none; color: white"
@@ -98,7 +98,7 @@
 				</h4>
 				{% endif %}
 			</div>
-			{% if request.session.username %}
+			{% if authorized %}
 			<button
 				class="logout-btn"
 				onclick="window.location='/logout'"

@@ -41,7 +41,8 @@ async def home_view(request):
 
     context = {"schedules": response.get("schedules", []), 
                'action_result': action_result, 
-               'action_request': action_request}
+               'action_request': action_request,
+               'authorized': request.session.get('username', None)}
 
     return await async_wrapper(render, request, "home.html", context)
 
