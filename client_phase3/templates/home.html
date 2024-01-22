@@ -1,34 +1,32 @@
-{% extends 'base.html' %} 
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div>
-  <head>
-    <meta charset='utf-8' />
-    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js'></script>
-        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Function to initialize the calendar with events
-        function initializeCalendar(events) {
-          var calendarEl = document.getElementById('calendar');
-          var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek',
-            slotDuration: '00:30:00', 
-            slotLabelInterval: '02:00:00', 
-            snapDuration: '00:15:00', 
-            events: events,
-          });
+	<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			// Function to initialize the calendar with events
+			function initializeCalendar(events) {
+				var calendarEl = document.getElementById("calendar");
+				var calendar = new FullCalendar.Calendar(calendarEl, {
+					initialView: "timeGridWeek",
+					slotDuration: "00:30:00",
+					slotLabelInterval: "02:00:00",
+					snapDuration: "00:15:00",
+					events: events,
+				});
 
-          calendar.render();
-        }
-        var events = document.getElementById('calendar').getAttribute('data-events');
-        events = eval(events);
-        initializeCalendar(events);
-      });
-    </script>
-  </head>
-  <body>
-    <div id='calendar' data-events='{{ events }}'></div>
-  </body>
+				calendar.render();
+			}
+			var events = document
+				.getElementById("calendar")
+				.getAttribute("data-events");
+			events = eval(events);
+			initializeCalendar(events);
+		});
+	</script>
+	<body>
+		<div id="calendar" data-events="{{ events }}"></div>
+	</body>
 </div>
 <div class="container mt-3">
 	{% if messages %}
@@ -41,16 +39,20 @@
 		</div>
 		{% endfor %}
 	</div>
+	{% endif %} {% if page == "views" and not events %}
+	<h1>No view is currently attached</h1>
 	{% endif %}
-    {% if page == "views" and not events %}
-        <h1> No view is currently attached </h1>
-    {% endif %}
 
-	<div class="toggle-buttons mb-3" style="display: flex; align-items: center; justify-content: center">
+	<div
+		class="toggle-buttons mb-3"
+		style="display: flex; align-items: center; justify-content: center"
+	>
 		<button id="showAddSchedule" class="btn btn-secondary">Add Schedule</button>
 		<button id="showAddEvent" class="btn btn-secondary">Add Event</button>
 		<button id="showDeleteEvent" class="btn btn-secondary">Delete Event</button>
-		<button id="showOtherAction" class="btn btn-secondary">Other Actions</button>
+		<button id="showOtherAction" class="btn btn-secondary">
+			Other Actions
+		</button>
 	</div>
 
 	<div class="card mb-4 add-schedule-card opt-card">
@@ -63,12 +65,12 @@
 					<input type="text" class="form-control" name="description" required />
 				</div>
 				<div class="form-group">
-                <label for="protection">Protection Level:</label>
-                <select class="form-control" name="protection" required>
-                    <option value="public">Public</option>
-                    <option value="protected">Protected</option>
-                    <!-- Add more options as needed -->
-                </select>
+					<label for="protection">Protection Level:</label>
+					<select class="form-control" name="protection" required>
+						<option value="public">Public</option>
+						<option value="protected">Protected</option>
+						<!-- Add more options as needed -->
+					</select>
 				</div>
 				<button type="submit" class="btn btn-primary">Add Schedule</button>
 			</form>
@@ -80,84 +82,95 @@
 			<h2 class="card-title">Add Event</h2>
 			<form method="post" action="{% url 'delete_event' %}">
 				{% csrf_token %}
-            <div class="form-group">
-                <label for="schedule_name">Schedule Name:</label>
-                <input type="text" class="form-control" name="schedule_name" required />
-            </div>
-            <div class="form-group">
-                <label for="event_name">Event Name:</label>
-                <input type="text" class="form-control" name="event_name" required />
-            </div>
-            <button type="submit" class="btn btn-primary">Delete Event</button>
-
-            </form>
-        </div>
-    </div>
-
-
- 
+				<div class="form-group">
+					<label for="schedule_name">Schedule Name:</label>
+					<input
+						type="text"
+						class="form-control"
+						name="schedule_name"
+						required
+					/>
+				</div>
+				<div class="form-group">
+					<label for="event_name">Event Name:</label>
+					<input type="text" class="form-control" name="event_name" required />
+				</div>
+				<button type="submit" class="btn btn-primary">Delete Event</button>
+			</form>
+		</div>
+	</div>
 
 	<div class="card add-event-card opt-card">
 		<div class="card-body">
 			<h2 class="card-title">Add Event</h2>
 			<form method="post" action="{% url 'add_event' %}">
 				{% csrf_token %}
-            <div class="form-group">
-                <label for="schedule_name">Schedule Name:</label>
-            <select class="form-control" name="schedule_name" required>
-                {% for n in schedule_names %}
-                <option value="{{n}}">{{n}}</option>
-                {% endfor %}
-            </select>
-            </div>
-        <div class="form-group">
-            <label for="event_type">Event Type:</label>
-            <select class="form-control" name="event_type" required>
-                <option value="MEETING">Meeting</option>
-                <option value="SEMINAR">Seminar</option>
-                <option value="LECTURE">Lecture</option>
-                <option value="APPOINTMENT">Appointment</option>
-                <option value="OFFICEHOUR">Office Hour</option>
-                <option value="FUN">Fun</option>
-            </select>
-        </div>
+				<div class="form-group">
+					<label for="schedule_name">Schedule Name:</label>
+					<select class="form-control" name="schedule_name" required>
+						{% for n in schedule_names %}
+						<option value="{{n}}">{{n}}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="event_type">Event Type:</label>
+					<select class="form-control" name="event_type" required>
+						<option value="MEETING">Meeting</option>
+						<option value="SEMINAR">Seminar</option>
+						<option value="LECTURE">Lecture</option>
+						<option value="APPOINTMENT">Appointment</option>
+						<option value="OFFICEHOUR">Office Hour</option>
+						<option value="FUN">Fun</option>
+					</select>
+				</div>
 
-            <div class="form-group">
-                <label for="start_time">Start Time:</label>
-                <input type="datetime-local" class="form-control" name="start_time" required />
-            </div>
-            <div class="form-group">
-                <label for="end_time">End Time:</label>
-                <input type="datetime-local" class="form-control" name="end_time" required />
-            </div>
-            <div class="form-group">
-                <label for="period">Period:</label>
-                <select class="form-control" name="period" required>
-                    <option value="none"> No recurrence</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="description">Description:</label>
-                <input type="text" class="form-control" name="description" required />
-            </div>
-            <div class="form-group">
-                <label for="location">Location:</label>
-                <input type="text" class="form-control" name="location" required />
-            </div>
-            <div class="form-group">
-                <label for="protection">Protection Level:</label>
-                <select class="form-control" name="protection" required>
-                    <option value="public">Public</option>
-                    <option value="protected">Protected</option>
-                    <!-- Add more options as needed -->
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="assignee">Assignee:</label>
-                <input type="text" class="form-control" name="assignee" required />
-            </div>
+				<div class="form-group">
+					<label for="start_time">Start Time:</label>
+					<input
+						type="datetime-local"
+						class="form-control"
+						name="start_time"
+						required
+					/>
+				</div>
+				<div class="form-group">
+					<label for="end_time">End Time:</label>
+					<input
+						type="datetime-local"
+						class="form-control"
+						name="end_time"
+						required
+					/>
+				</div>
+				<div class="form-group">
+					<label for="period">Period:</label>
+					<select class="form-control" name="period" required>
+						<option value="none">No recurrence</option>
+						<option value="weekly">Weekly</option>
+						<option value="monthly">Monthly</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="description">Description:</label>
+					<input type="text" class="form-control" name="description" required />
+				</div>
+				<div class="form-group">
+					<label for="location">Location:</label>
+					<input type="text" class="form-control" name="location" required />
+				</div>
+				<div class="form-group">
+					<label for="protection">Protection Level:</label>
+					<select class="form-control" name="protection" required>
+						<option value="public">Public</option>
+						<option value="protected">Protected</option>
+						<!-- Add more options as needed -->
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="assignee">Assignee:</label>
+					<input type="text" class="form-control" name="assignee" required />
+				</div>
 				<button type="submit" class="btn btn-primary">Add Event</button>
 			</form>
 		</div>
@@ -214,7 +227,7 @@
 		const addScheduleCard = document.querySelector(".add-schedule-card");
 		const addEventCard = document.querySelector(".add-event-card");
 		const otherActionCard = document.querySelector(".other-action-card");
-		const deleteEventCard= document.querySelector(".delete-event-card");
+		const deleteEventCard = document.querySelector(".delete-event-card");
 
 		showAddScheduleBtn.addEventListener("click", function () {
 			addScheduleCard.style.display = "block";
@@ -246,4 +259,3 @@
 </script>
 
 {% endblock content %}
-
