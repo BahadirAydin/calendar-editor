@@ -293,9 +293,10 @@ class ScheduleManager:
     def get_all_views(self, user_id):
         db = sqlite3.connect("project.sql3")
         c = db.cursor()
-        query = f"select * from users_and_views where user_id='{user_id}'"
+        query = f"select * from users_and_views where user_id='{user_id}' AND is_attached=1"
         row = c.execute(query)
         v = row.fetchall()
+        print(v)
         if not v:
             return None
 

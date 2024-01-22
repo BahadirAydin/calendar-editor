@@ -66,6 +66,7 @@ async def home_view(request):
         "action_result": action_result,
         "action_request": action_request,
         "authorized": request.session.get("username", None),
+        "page": "home"
     }
 
     return await async_wrapper(render, request, "home.html", context)
@@ -84,21 +85,27 @@ async def user_views(request):
     action_request = await async_wrapper(request.session.pop, "action_request", None)
 
     events = []
-    schedules = response.get("schedules", [])
-    colors = ["#CC6666", "#000", "#6666FF", "#FFFF99", "red", "#FF99FF"]
-    color_index = 0
-    for schedule in schedules:
-        color = colors[color_index]
-        color_index = (color_index + 1) % len(colors)
-        for event in schedule["events"]:
-            print(color,event["description"])
-            event = {
-                "title": event["description"] + "(" + event["event_type"].lower()+ ")",
-                "start": event["start_time"],
-                "end": event["end_time"],
-                "color": color,
-            }
-            events.append(event)
+    views = response.get("views", [])
+    schedules = []
+    if len(views) != 0:
+
+        schedules = views[0].get("schedules", [])
+        print(schedules)
+        colors = ["#CC6666", "#000", "#6666FF", "#FFFF99", "red", "#FF99FF"]
+        color_index = 0
+        for schedule in schedules:
+            color = colors[color_index]
+            color_index = (color_index + 1) % len(colors)
+            print("EVENTS:", schedule["events"])
+            for event in schedule["events"]:
+                event = {
+                    "title": event[5] + "(" + event[6].lower()+ ")",
+                    "start": event[2],
+                    "end": event[3],
+                    "color": color,
+                }
+                events.append(event)
+
 
     context = {
         "schedule_names": [schedule["description"] for schedule in schedules],
@@ -106,7 +113,10 @@ async def user_views(request):
         "action_result": action_result,
         "action_request": action_request,
         "authorized": request.session.get("username", None),
+        "page": "views",
+        "view_name": response.get("description", None)
     }
+    print(context["events"])
 
     return await async_wrapper(render, request, "home.html", context)
 
@@ -184,11 +194,13 @@ async def add_schedule_view(request):
         response = await send_to_websocket(data_string)
 
         if response["status"] == "success":
-            return redirect("home")
+            pass
         else:
             messages.error(request, f"Failed to add schedule. {response['message']}")
-            return redirect("home")
-    return redirect("home")
+    if request.META.get("HTTP_REFERER") and "user_views" in request.META.get("HTTP_REFERER"):
+        return redirect("user_views")
+    else:
+        return redirect("home")
 
 
 async def add_event_view(request):
@@ -219,8 +231,10 @@ async def add_event_view(request):
             messages.error(request, f"Failed to add event. {response['message']}")
         else:
             messages.success(request, "Event added successfully.")
-            return redirect("home")
-    return redirect("home")
+    if request.META.get("HTTP_REFERER") and "user_views" in request.META.get("HTTP_REFERER"):
+        return redirect("user_views")
+    else:
+        return redirect("home")
 
 async def delete_event_view(request):
     token = await async_wrapper(request.COOKIES.get, "auth_token")
@@ -241,8 +255,10 @@ async def delete_event_view(request):
             messages.error(request, f"Failed to delete event. {response['message']}")
         else:
             messages.success(request, "Event deleted successfully.")
-            return redirect("home")
-    return redirect("home")
+    if request.META.get("HTTP_REFERER") and "user_views" in request.META.get("HTTP_REFERER"):
+        return redirect("user_views")
+    else:
+        return redirect("home")
 
 
 async def other_action_view(request):
@@ -258,7 +274,7 @@ async def other_action_view(request):
 
         await async_wrapper(request.session.__setitem__, "action_result", response)
         await async_wrapper(request.session.__setitem__, "action_request", action)
+    if request.META.get("HTTP_REFERER") and "user_views" in request.META.get("HTTP_REFERER"):
+        return redirect("user_views")
+    else:
         return redirect("home")
-
-    return redirect("home")
-

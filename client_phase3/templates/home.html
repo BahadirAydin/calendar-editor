@@ -13,9 +13,11 @@
           var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'timeGridWeek',
             slotDuration: '00:30:00', 
+            slotLabelInterval: '02:00:00', 
             snapDuration: '00:15:00', 
-            events: events
+            events: events,
           });
+
           calendar.render();
         }
         var events = document.getElementById('calendar').getAttribute('data-events');
@@ -40,6 +42,9 @@
 		{% endfor %}
 	</div>
 	{% endif %}
+    {% if page == "views" and not events %}
+        <h1> No view is currently attached </h1>
+    {% endif %}
 
 	<div class="toggle-buttons mb-3" style="display: flex; align-items: center; justify-content: center">
 		<button id="showAddSchedule" class="btn btn-secondary">Add Schedule</button>
@@ -128,6 +133,7 @@
             <div class="form-group">
                 <label for="period">Period:</label>
                 <select class="form-control" name="period" required>
+                    <option value="none"> No recurrence</option>
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                 </select>
