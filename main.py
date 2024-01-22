@@ -61,16 +61,18 @@ def process_request(request, sock):
         elif command == "addevent":
             response = handle_addevent(parts[2:], id)
             schid = ScheduleManager().get_schedule_id(id, parts[2])
-            print("schedule id: ", schid)
-            message = json.dumps({"type": "NEW", "id" : schid, "command": "REFRESH" })
-            broadcast_message(message, sock)
+            if(schid):
+                print("schedule id: ", schid)
+                message = json.dumps({"type": "NEW", "id" : schid, "command": "REFRESH" })
+                broadcast_message(message, sock)
             return response        
         elif command == "deleteevent":
             response = handle_deleteevent(parts[2:], id)
             schid = ScheduleManager().get_schedule_id(id, parts[2])
-            print("schedule id delete: ", schid)
-            message = json.dumps({"type": "DELETE", "id" : schid, "command": "REFRESH" })
-            broadcast_message(message, sock)
+            if schid:
+                print("schedule id delete: ", schid)
+                message = json.dumps({"type": "DELETE", "id" : schid, "command": "REFRESH" })
+                broadcast_message(message, sock)
             return response 
                
         # UPDATE USER
@@ -79,9 +81,10 @@ def process_request(request, sock):
         elif command == "updateevent":
             response = handle_updateevent(parts[2:], id)
             schid = ScheduleManager().get_schedule_id(id, parts[2])
-            print("schedule id update: ", schid)
-            message = json.dumps({"type": "UPDATE", "id" : schid, "command": "REFRESH" })
-            broadcast_message(message, sock)
+            if schid:
+                print("schedule id update: ", schid)
+                message = json.dumps({"type": "UPDATE", "id" : schid, "command": "REFRESH" })
+                broadcast_message(message, sock)
             return response 
         elif command == "createview":
             return handle_createview(parts[2:], id)

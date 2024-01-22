@@ -49,20 +49,10 @@
 	<div style="width: 70%" id="calendar" data-events="{{ events }}"></div>
 </div>
 <div class="container mt-3">
-	{% if messages %}
-	<div class="simple_flex">
-		{% for message in messages %}
-		<div class="{{ message.tags }}" style="margin-bottom: 10px">
-			<p style="color: white; font-size: 20px; margin-bottom: 0 !important">
-				{{ message }}
-			</p>
-		</div>
-		{% endfor %}
-	</div>
-	{% endif %} 
-
-    {% if page == "views" and not events %}
-	<h1 style="text-align: center">No view is currently attached or the view is empty.</h1>
+	{% if page == "views" and not events %}
+	<h1 style="text-align: center">
+		No view is currently attached or the view is empty.
+	</h1>
 	{% endif %}
 
 	<div
@@ -239,8 +229,15 @@
 		display: none;
 	}
 </style>
+{{ schedule_ids|json_script:"schedule_ids-data" }}
 
 <script>
+	var schedule_ids = JSON.parse(
+		document.getElementById("schedule_ids-data").textContent
+	);
+
+	console.log(schedule_ids);
+
 	document.addEventListener("DOMContentLoaded", function () {
 		const showAddScheduleBtn = document.getElementById("showAddSchedule");
 		const showAddEventBtn = document.getElementById("showAddEvent");
@@ -302,11 +299,11 @@
 
 	function handleIncomingMessage(message) {
 		try {
-			print(message);
+			console.log(message);
 			var data = JSON.parse(message);
 
 			if (data.command === "REFRESH" && isRelevantId(data.id)) {
-				alert("There are some changes on this view");
+				window.alert("There are some changes on this view");
 				window.location.reload();
 			}
 		} catch (e) {
@@ -315,11 +312,7 @@
 	}
 
 	function isRelevantId(id) {
-		var events = JSON.parse(
-			document.getElementById("calendar").getAttribute("data-events")
-		);
-
-		return events.some((event) => event.id === id);
+		return id in schedule_ids;
 	}
 </script>
 

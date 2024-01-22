@@ -295,7 +295,6 @@ def handle_deleteevent(request, user_id):
 
 #### PRINT
 
-
 def handle_printuser(user_id):
     user = ScheduleManager().get_user_by_id(user_id)
     if user is None:

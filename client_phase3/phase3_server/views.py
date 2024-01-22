@@ -61,7 +61,6 @@ async def home_view(request):
 
     context = {
         "schedule_names": [schedule["description"] for schedule in schedules],
-        "schedule_ids" : [schedule["id"] for schedule in schedules],
         "events": events,
         "action_result": action_result,
         "action_request": action_request,
@@ -109,9 +108,13 @@ async def user_views(request):
     response = await send_to_websocket(data_string)
     schedules = response.get("schedules", [])
 
+    attached_view = next((view for view in views if view.get('attached') == 'True'), None)
+
+    schedule_ids = [schedule['id'] for schedule in attached_view['schedules']] if attached_view else []
+
     context = {
         "schedule_names": [schedule["description"] for schedule in schedules],
-        "schedule_ids": [schedule["id"] for schedule in schedules],
+        "schedule_ids": schedule_ids,
         "events": events,
         "action_result": action_result,
         "action_request": action_request,
