@@ -23,6 +23,20 @@
 	});
 </script>
 
+<div class="container mt-3">
+	{% if messages %}
+	<div class="simple_flex">
+		{% for message in messages %}
+		<div class="{{ message.tags }}" style="margin-bottom: 10px">
+			<p style="color: white; font-size: 20px; margin-bottom: 0 !important">
+				{{ message }}
+			</p>
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %}
+</div>
+
 <div
 	style="
 		display: flex;
@@ -35,17 +49,7 @@
 	<div style="width: 70%" id="calendar" data-events="{{ events }}"></div>
 </div>
 <div class="container mt-3">
-	{% if messages %}
-	<div class="simple_flex">
-		{% for message in messages %}
-		<div class="{{ message.tags }}" style="margin-bottom: 10px">
-			<p style="color: white; font-size: 20px; margin-bottom: 0 !important">
-				{{ message }}
-			</p>
-		</div>
-		{% endfor %}
-	</div>
-	{% endif %} {% if page == "views" and not events %}
+	{% if page == "views" and not events %}
 	<h1 style="text-align: center">No view is currently attached</h1>
 	{% endif %}
 
@@ -262,6 +266,48 @@
 			deleteEventCard.style.display = "block";
 		});
 	});
+
+	document.addEventListener("DOMContentLoaded", function () {
+		var socket = new WebSocket("ws://localhost:1423");
+
+		socket.addEventListener("open", function (event) {
+			console.log("Connected to WS Server");
+		});
+
+		socket.addEventListener("message", function (event) {
+			console.log("Message from server: ", event.data);
+			handleIncomingMessage(event.data);
+		});
+
+		socket.addEventListener("error", function (event) {
+			console.error("WebSocket Error: " + event.message);
+		});
+
+		socket.addEventListener("close", function (event) {
+			console.log("Disconnected from WS Server");
+		});
+	});
+
+	function handleIncomingMessage(message) {
+		try {
+			var data = JSON.parse(message);
+
+			if (data.type === "UPDATE" && isRelevantId(data.id)) {
+				alert("There are some changes on this view");
+				window.location.reload();
+			}
+		} catch (e) {
+			console.error("Error parsing WebSocket message", e);
+		}
+	}
+
+	function isRelevantId(id) {
+		var events = JSON.parse(
+			document.getElementById("calendar").getAttribute("data-events")
+		);
+
+		return events.some((event) => event.id === id);
+	}
 </script>
 
 {% endblock content %}
