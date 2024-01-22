@@ -45,7 +45,9 @@
 		</div>
 		{% endfor %}
 	</div>
-	{% endif %} {% if page == "views" and not events %}
+	{% endif %} 
+
+    {% if page == "views" and not events %}
 	<h1 style="text-align: center">No view is currently attached or the view is empty.</h1>
 	{% endif %}
 

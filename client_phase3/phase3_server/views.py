@@ -86,9 +86,9 @@ async def user_views(request):
 
     events = []
     views = response.get("views", [])
+    print("VIEWS:", views)
     schedules = []
     if len(views) != 0:
-
         schedules = views[0].get("schedules", [])
         print(schedules)
         colors = ["#CC6666", "#000", "#6666FF", "#FFFF99", "red", "#FF99FF"]
@@ -96,7 +96,6 @@ async def user_views(request):
         for schedule in schedules:
             color = colors[color_index]
             color_index = (color_index + 1) % len(colors)
-            print("EVENTS:", schedule["events"])
             for event in schedule["events"]:
                 event = {
                     "title": event[5] + "(" + event[6].lower()+ ")",
@@ -106,6 +105,9 @@ async def user_views(request):
                 }
                 events.append(event)
 
+    data_string = f"{token} schedules"
+    response = await send_to_websocket(data_string)
+    schedules = response.get("schedules", [])
 
     context = {
         "schedule_names": [schedule["description"] for schedule in schedules],
@@ -116,12 +118,8 @@ async def user_views(request):
         "page": "views",
         "view_name": response.get("description", None)
     }
-    print(context["events"])
 
     return await async_wrapper(render, request, "home.html", context)
-
-
-
 
 
 async def signup_view(request):
