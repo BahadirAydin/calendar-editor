@@ -80,7 +80,7 @@ def handle_addtoview(request, user_id):
                 response["message"] = "Database error"
         else:
             response["status"] = "error"
-            response["message"] = "View is not attached"
+            response["message"] = "View is not attached or the view is empty."
     return json.dumps(response)
 
 
