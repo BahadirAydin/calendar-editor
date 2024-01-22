@@ -154,7 +154,7 @@ class ScheduleManager:
         try:
             db = sqlite3.connect("project.sql3")
             c = db.cursor()
-            query = f"select id from schedule where user_id='{userid}' AND description='{description}'"
+            query = f"SELECT id FROM schedule WHERE (user_id='{userid}' AND description='{description}') OR (protection='public' AND description='{description}')"
             row = c.execute(query)
             v = row.fetchone()
             if v is None:
@@ -216,7 +216,7 @@ class ScheduleManager:
                     "events": events,
                 }
                 data.append(d)
-        query2 = f"select * from schedule where protection='PUBLIC'"
+        query2 = f"select * from schedule where protection='public'"
         row2 = c.execute(query2)
         v2 = row2.fetchall()
         if v2 is not None:
@@ -310,46 +310,47 @@ class ScheduleManager:
         query = f"select * from users_and_views where user_id='{user_id}' AND is_attached=1"
         row = c.execute(query)
         v = row.fetchall()
-        print(v)
-        if not v:
-            return None
 
         data = []
-        for i in range(len(v)):
-            view_id = v[i][1]
-            description = v[i][2]
-            is_attached = v[i][3]
+        if v is not None:
+            for i in range(len(v)):
+                view_id = v[i][1]
+                description = v[i][2]
+                is_attached = v[i][3]
 
-            query_schedules = f"select schedule_id from views_and_schedules where view_id='{view_id}'"
-            row_schedules = c.execute(query_schedules)
-            schedule_ids = row_schedules.fetchall()
+                query_schedules = f"select schedule_id from views_and_schedules where view_id='{view_id}'"
+                row_schedules = c.execute(query_schedules)
+                schedule_ids = row_schedules.fetchall()
+                schedules = []
+                for schedule_id in schedule_ids:
+                    if schedule_id is None:
+                        continue
+                    query_schedule = f"select * from schedule where id='{schedule_id[0]}'"
+                    row_schedule = c.execute(query_schedule)
+                    v2 = row_schedule.fetchone()
 
-            schedules = []
-            for schedule_id in schedule_ids:
-                query_schedule = f"select * from schedule where id='{schedule_id[0]}'"
-                row_schedule = c.execute(query_schedule)
-                v2 = row_schedule.fetchone()
+                    query_events = f"select * from event where schedule_id='{schedule_id[0]}'"
+                    row_events = c.execute(query_events)
+                    events = row_events.fetchall()
+                    if v2 is None:
+                        continue
 
-                query_events = f"select * from event where schedule_id='{schedule_id[0]}'"
-                row_events = c.execute(query_events)
-                events = row_events.fetchall()
+                    schedule_data = {
+                        "id": v2[0],
+                        "description": v2[2],
+                        "protection": v2[3],
+                        "user_id": v2[1],
+                        "events": events,
+                    }
+                    schedules.append(schedule_data)
 
-                schedule_data = {
-                    "id": v2[0],
-                    "description": v2[2],
-                    "protection": v2[3],
-                    "user_id": v2[1],
-                    "events": events,
+                view_data = {
+                    "view_id": view_id,
+                    "description": description,
+                    "is_attached": is_attached,
+                    "schedules": schedules,
                 }
-                schedules.append(schedule_data)
-
-            view_data = {
-                "view_id": view_id,
-                "description": description,
-                "is_attached": is_attached,
-                "schedules": schedules,
-            }
-            data.append(view_data)
+                data.append(view_data)
 
         return data
 

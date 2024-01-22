@@ -49,10 +49,20 @@
 	<div style="width: 70%" id="calendar" data-events="{{ events }}"></div>
 </div>
 <div class="container mt-3">
-	{% if page == "views" and not events %}
-	<h1 style="text-align: center">
-		No view is currently attached or the view is empty.
-	</h1>
+	{% if messages %}
+	<div class="simple_flex">
+		{% for message in messages %}
+		<div class="{{ message.tags }}" style="margin-bottom: 10px">
+			<p style="color: white; font-size: 20px; margin-bottom: 0 !important">
+				{{ message }}
+			</p>
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %} 
+
+    {% if page == "views" and not events %}
+	<h1 style="text-align: center">No view is currently attached or the view is empty.</h1>
 	{% endif %}
 
 	<div
