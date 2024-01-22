@@ -1,32 +1,38 @@
 {% extends 'base.html' %} {% block content %}
-<div>
-	<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-	<script>
-		document.addEventListener("DOMContentLoaded", function () {
-			// Function to initialize the calendar with events
-			function initializeCalendar(events) {
-				var calendarEl = document.getElementById("calendar");
-				var calendar = new FullCalendar.Calendar(calendarEl, {
-					initialView: "timeGridWeek",
-					slotDuration: "00:30:00",
-					slotLabelInterval: "02:00:00",
-					snapDuration: "00:15:00",
-					events: events,
-				});
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		function initializeCalendar(events) {
+			var calendarEl = document.getElementById("calendar");
+			var calendar = new FullCalendar.Calendar(calendarEl, {
+				initialView: "timeGridWeek",
+				slotDuration: "00:30:00",
+				slotLabelInterval: "02:00:00",
+				snapDuration: "00:15:00",
+				events: events,
+			});
 
-				calendar.render();
-			}
-			var events = document
-				.getElementById("calendar")
-				.getAttribute("data-events");
-			events = eval(events);
-			initializeCalendar(events);
-		});
-	</script>
-	<body>
-		<div id="calendar" data-events="{{ events }}"></div>
-	</body>
+			calendar.render();
+		}
+		var events = document
+			.getElementById("calendar")
+			.getAttribute("data-events");
+		events = eval(events);
+		initializeCalendar(events);
+	});
+</script>
+
+<div
+	style="
+		display: flex;
+		justify-content: center;
+		margin-top: 10px;
+		height: 70vh;
+		overflow: scroll;
+	"
+>
+	<div style="width: 70%" id="calendar" data-events="{{ events }}"></div>
 </div>
 <div class="container mt-3">
 	{% if messages %}
@@ -40,7 +46,7 @@
 		{% endfor %}
 	</div>
 	{% endif %} {% if page == "views" and not events %}
-	<h1>No view is currently attached</h1>
+	<h1 style="text-align: center">No view is currently attached</h1>
 	{% endif %}
 
 	<div
