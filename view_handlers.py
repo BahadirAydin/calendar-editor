@@ -70,7 +70,7 @@ def handle_addtoview(request, user_id):
         schedule_id = ScheduleManager().get_schedule_id(user_id, schedule_description)
         if schedule_id is None:
             response["status"] = "error"
-            response["message"] = "Schedule does not exist"
+            response["message"] = "Schedule does not exist or you do not own it."
         if ScheduleManager().is_view_attached(view_id, user_id):
             if ScheduleManager().add_to_view(view_id, schedule_id):
                 response["status"] = "success"
@@ -80,7 +80,7 @@ def handle_addtoview(request, user_id):
                 response["message"] = "Database error"
         else:
             response["status"] = "error"
-            response["message"] = "View is not attached"
+            response["message"] = "View is not attached or the view is empty."
     return json.dumps(response)
 
 
