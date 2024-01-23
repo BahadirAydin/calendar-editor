@@ -1,0 +1,85 @@
+{
+    "schedules": [
+        {
+            "end": "2014/05/10 3:00",
+            "start": "2014/05/10 1:40",
+            "title": "schedule1"
+        },
+        {
+            "end": "2014/05/10 2:41",
+            "start": "2014/05/10 2:30",
+            "title": "schedule2<br>with style",
+            "css":{"background-color":"#f39c12"}
+        },
+        {
+            "end": "2014/05/10 17:41",
+            "start": "2014/05/10 10:30",
+            "title": "schedule3"
+        },
+        {
+            "end": "2014/05/10 20:41",
+            "start": "2014/05/10 15:30",
+            "title": "schedule3"
+        },
+        {
+            "end": "2014/05/10 22:41",
+            "start": "2014/05/10 21:30",
+            "title": "schedule4"
+        },
+        {
+            "end": "2014/05/10 16:30",
+            "start": "2014/05/10 15:55",
+            "title": "schedule5"
+        },
+        {
+            "end": "2014/05/10 19:55",
+            "start": "2014/05/10 18:30",
+            "title": "schedule6"
+        }
+
+    ],
+    "events": [
+        {
+            "date": "2014/05/10 16:00",
+            "title": "event1"
+        },
+        {
+            "date": "2014/05/10 17:00",
+            "title": "event2 with Image<br><a href='http://wepia.biz'><img src='http://wepia.biz/wlogo.png'/></a>",
+            "css":{"height":"302px"}
+        },
+        {
+            "date": "2014/05/10 10:00",
+            "title": "breakfast"
+        },
+        {
+            "date": "2014/05/10 2:40",
+            "title": "4sq Check-in"
+        },
+        {
+            "date": "2014/05/10 14:30",
+            "title": "facebook post"
+        },
+        {
+            "date": "2014/05/10 20:30",
+            "title": "Long text<br>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<br>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<br>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<br>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<br>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+            "date": "2014/05/10 2:50",
+            "title": "tweet1"
+        },
+        {
+            "date": "2014/05/10 15:40",
+            "title": "tweet2"
+        },
+        {
+            "date": "2014/05/10 2:35",
+            "title": "tweet3"
+        }
+
+    ],
+    "options":{
+        "time":true,
+        "timeFormat":"HH:mm"
+    }
+}

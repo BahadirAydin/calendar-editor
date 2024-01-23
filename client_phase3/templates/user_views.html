@@ -1,20 +1,87 @@
 {% extends 'base.html' %} {% block content %}
-<div
-	style="
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		height: 40vh;
-	"
->
-	<div style="text-align: center; width: 100%">
-		<h2>This part has not been implemented yet!</h2>
-		<hr />
-		<h3>
-			However, you can interact with user views on the
-			<strong>Other Actions</strong> tab of the Home page.
-		</h3>
-	</div>
-</div>
+<div id="schedule-container"></div>
+<div id="demo" class="demo"></div>
+<script>
+	$(document).ready(function () {
+		var scheduleData = {
+			schedules: [
+				{
+					end: "2014/05/10 3:00",
+					start: "2014/05/10 1:40",
+					title: "Schedule 1",
+				},
+				{
+					end: "2014/05/10 2:41",
+					start: "2014/05/10 2:30",
+					title: "Schedule 2",
+					css: { "background-color": "#f39c12" },
+				},
+				{
+					end: "2014/05/10 17:41",
+					start: "2014/05/10 10:30",
+					title: "Schedule 3",
+				},
+				{
+					end: "2014/05/10 20:41",
+					start: "2014/05/10 15:30",
+					title: "Schedule 4",
+				},
+				{
+					end: "2014/05/10 22:41",
+					start: "2014/05/10 21:30",
+					title: "Schedule 5",
+				},
+				{
+					end: "2014/05/10 16:30",
+					start: "2014/05/10 15:55",
+					title: "Schedule 6",
+				},
+				{
+					end: "2014/05/10 19:55",
+					start: "2014/05/10 18:30",
+					title: "Schedule 7",
+				},
+			],
+			events: [
+				{
+					"<a href='https://www.jqueryscript.net/time-clock/'>date</a>":
+						"2014/05/10 16:00",
+					title: "Event 1",
+				},
+				{
+					date: "2014/05/10 17:00",
+					title: "Event 2",
+					css: { height: "302px" },
+				},
+				{
+					date: "2014/05/10 10:00",
+					title: "Event 3",
+				},
+
+				{
+					date: "2014/05/10 2:50",
+					title: "Event 7",
+				},
+				{
+					date: "2014/05/10 15:40",
+					title: "Event 8",
+				},
+				{
+					date: "2014/05/10 2:35",
+					title: "Event 9",
+				},
+			],
+			options: {
+				time: true,
+				timeFormat: "HH:mm",
+			},
+		};
+
+		$("#schedule-container").graspSchedule({
+			schedule: scheduleData,
+		});
+
+		$("#demo").graspSchedule(scheduleData);
+	});
+</script>
 {% endblock content %}

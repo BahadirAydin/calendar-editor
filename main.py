@@ -1,51 +1,38 @@
-from schedule_manager import ScheduleManager
 import argparse
-import socket
-import threading
+import shlex
+import json
+from websockets.sync import server
+from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
+from schedule_manager import ScheduleManager
 from handler import *
 from view_handlers import *
-import atexit
-import shlex
+from token_manager import TokenManager
 from retrieve_objects import retrieve_objects
 from colorama import Fore, Style
-from token_manager import TokenManager
 
 schedule_manager = ScheduleManager()
 
-HELP_TEXT = f"""{Fore.GREEN}Valid commands are:{Style.RESET_ALL}
-{Fore.CYAN}adduser {Fore.WHITE}<username> <email> <fullname> <password>{Style.RESET_ALL}
-{Fore.CYAN}deleteuser {Fore.WHITE}<username> <password>{Style.RESET_ALL}
-{Fore.CYAN}signin {Fore.WHITE}<username> <password>{Style.RESET_ALL}
-{Fore.CYAN}addschedule {Fore.WHITE}<username> <description> <protection>{Style.RESET_ALL}
-{Fore.CYAN}deleteschedule {Fore.WHITE}<username> <schedule_id>{Style.RESET_ALL}
-{Fore.CYAN}addevent {Fore.WHITE}<username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>{Style.RESET_ALL}
-{Fore.CYAN}deleteevent {Fore.WHITE}<username> <schedule_id> <event_id>{Style.RESET_ALL}
-{Fore.CYAN}changepassword {Fore.WHITE}<username> <password> <new_password>{Style.RESET_ALL}
-{Fore.CYAN}updateevent {Fore.WHITE}<username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>{Style.RESET_ALL}
-{Fore.CYAN}createview {Fore.WHITE}<description>{Style.RESET_ALL}
-{Fore.CYAN}attachview {Fore.WHITE}<view_name> <description>{Style.RESET_ALL}
-{Fore.CYAN}detachview {Fore.WHITE}<view_name> <description>{Style.RESET_ALL}
-{Fore.CYAN}addtoview {Fore.WHITE}<view_name> <schedule_name>{Style.RESET_ALL}
-{Fore.CYAN}PRINTUSER {Fore.WHITE}<username>{Style.RESET_ALL}
-{Fore.CYAN}PRINTSCHEDULE {Fore.WHITE}<username> <schedule_id>{Style.RESET_ALL}
-{Fore.CYAN}PRINTVIEW {Fore.WHITE}<view_name>{Style.RESET_ALL}
+HELP_TEXT = f"""Valid commands are:
+    adduser <username> <email> <fullname> <password>
+    deleteuser <username> <password>
+    signin <username> <password>
+    addschedule <username> <description> <protection>
+    deleteschedule <username> <schedule_id>
+    addevent <username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>
+    deleteevent <username> <schedule_id> <event_id>
+    changepassword <username> <password> <new_password>
+    updateevent <username> <schedule_id> <event_description> <event_type> <start> <end> <period> <description> <location> <protection> <assignee>
+    createview <description>
+    attachview <view_name> <description>
+    detachview <view_name> <description>
+    addtoview <view_name> <schedule_name>
+    PRINTUSER <username>
+    PRINTSCHEDULE <username> <schedule_id>
+    PRINTVIEW <view_name>
 """
-
-
-def handle_client(connection, address):
-    try:
-        while True:
-            request = connection.recv(1024).decode()
-            if not request:
-                break
-
-            response = process_request(request)
-            connection.sendall(response.encode())
-    finally:
-        connection.close()
-
-
-def process_request(request):
+connected_clients = []
+        
+def process_request(request, sock):
     parts = shlex.split(request)
     if len(parts) > 0:
         command = parts[0]
@@ -54,13 +41,11 @@ def process_request(request):
         elif command == "signin":
             print(parts)
             return handle_signin(parts[1:])
-        
         uname = TokenManager().verify_token(command)
         if uname is None:
             return json.dumps({"status": "error", "message" : "Not a valid authentication token. Please sign in again."})
         
         id = ScheduleManager().get_user_id(uname)
-
         command = parts[1]
         print(parts[2:])
         if command == "addschedule":
@@ -74,14 +59,33 @@ def process_request(request):
         elif command == "deleteuser":
             return handle_deleteuser(parts[2:])
         elif command == "addevent":
-            return handle_addevent(parts[2:], id)
+            response = handle_addevent(parts[2:], id)
+            schid = ScheduleManager().get_schedule_id(id, parts[2])
+            if(schid):
+                print("schedule id: ", schid)
+                message = json.dumps({"type": "NEW", "id" : schid, "command": "REFRESH" })
+                broadcast_message(message, sock)
+            return response        
         elif command == "deleteevent":
-            return handle_deleteevent(parts[2:], id)
+            response = handle_deleteevent(parts[2:], id)
+            schid = ScheduleManager().get_schedule_id(id, parts[2])
+            if schid:
+                print("schedule id delete: ", schid)
+                message = json.dumps({"type": "DELETE", "id" : schid, "command": "REFRESH" })
+                broadcast_message(message, sock)
+            return response 
+               
         # UPDATE USER
         elif command == "changepassword":
             return handle_changepassword(parts[2:], id)
         elif command == "updateevent":
-            return handle_updateevent(parts[2:], id)
+            response = handle_updateevent(parts[2:], id)
+            schid = ScheduleManager().get_schedule_id(id, parts[2])
+            if schid:
+                print("schedule id update: ", schid)
+                message = json.dumps({"type": "UPDATE", "id" : schid, "command": "REFRESH" })
+                broadcast_message(message, sock)
+            return response 
         elif command == "createview":
             return handle_createview(parts[2:], id)
         elif command == "attachview":
@@ -97,33 +101,39 @@ def process_request(request):
             return handle_printschedule(parts[2:], id)
         elif command == "PRINTVIEW":
             return handle_printview(parts[2:], id)
+    return json.dumps({"response": HELP_TEXT})
 
-    return HELP_TEXT
+def broadcast_message(message, sock):
+    for client in connected_clients:
+        if client != sock:
+            try:
+                client.send(message)
+            except Exception as e:
+                print(f"Error sending message to a client: {e}")
 
+def agent(sock):
+    connected_clients.append(sock)
+    try:
+        while True:
+            inp = sock.recv()
+            response = process_request(inp, sock)
+            sock.send(response)
+    except ConnectionClosedOK:
+        print('Client is terminating')
+    except ConnectionClosedError:
+        print('Client generated error')
+    finally:
+        connected_clients.remove(sock)
 
-def start_server(port):
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # added to prevent socket already in use error.
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.bind(("", port))
-    server_socket.listen()
-    atexit.register(server_socket.close)
-
+def start_server(host, port):
     retrieve_objects()
-
-    print(f"Server listening on port {port}")
-
-    while True:
-        conn, addr = server_socket.accept()
-        print(f"Connection from {addr}")
-
-        client_thread = threading.Thread(target=handle_client, args=(conn, addr))
-        client_thread.start()
-
+    print(f"Server listening on host {host}, port {port}")
+    srv = server.serve(agent, host=host, port=port)
+    srv.serve_forever()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="TCP Server Application")
-    parser.add_argument("--port", type=int, required=True, help="TCP port to listen on")
+    parser = argparse.ArgumentParser(description="WebSocket Server Application")
+    parser.add_argument("--host", type=str, default="", help="WebSocket host to listen on")
+    parser.add_argument("--port", type=int, required=True, help="WebSocket port to listen on")
     args = parser.parse_args()
-
-    start_server(args.port)
+    start_server(args.host, args.port)

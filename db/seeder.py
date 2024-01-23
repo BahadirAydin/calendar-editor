@@ -18,7 +18,7 @@ def get_random_event_type():
     return random.choice(event_types)
 
 def get_random_protection():
-    return random.choice(["PUBLIC", "PRIVATE"])
+    return random.choice(["public", "private"])
 
 def random_string(length=10):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))

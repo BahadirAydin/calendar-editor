@@ -59,6 +59,7 @@ def handle_detachview(request, user_id):
 
 def handle_addtoview(request, user_id):
     response = {"status": "error", "message": "Missing or too many arguments"}
+    print("IMHERE")
     if len(request) == 2:
         view_description = request[0]
         schedule_description = request[1]
@@ -67,20 +68,30 @@ def handle_addtoview(request, user_id):
         if view_id is None:
             response["status"] = "error"
             response["message"] = "View does not exist"
-        schedule_id = ScheduleManager().get_schedule_id(user_id, schedule_description)
+            print(response)
+        schedule_id = ScheduleManager().get_schedule_id(user_id , schedule_description)
         if schedule_id is None:
             response["status"] = "error"
-            response["message"] = "Schedule does not exist"
+            response["message"] = "Schedule does not exist or you do not own it."
+            print(response)
+            return json.dumps(response)
         if ScheduleManager().is_view_attached(view_id, user_id):
             if ScheduleManager().add_to_view(view_id, schedule_id):
                 response["status"] = "success"
                 response["message"] = "Schedule added to view successfully"
+                print(response)
+                return json.dumps(response)
             else:
                 response["status"] = "error"
                 response["message"] = "Database error"
+                print(response)
+                return json.dumps(response)
         else:
             response["status"] = "error"
-            response["message"] = "View is not attached"
+            response["message"] = "View is not attached or the view is empty."
+            print(response)
+            return json.dumps(response)
+    print(response)
     return json.dumps(response)
 
 
@@ -168,4 +179,5 @@ def handle_printallviews(user_id):
                 }
             )
 
+    print(response)
     return json.dumps(response)
